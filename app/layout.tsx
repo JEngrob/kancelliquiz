@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Hitster Online",
-  description: "Online multiplayer version of Hitster",
+  title: "QUIZ-PROTO-2025 | Randers Kommune",
+  description: "Officiel protokol for videns-verifikation og underholdningsformål",
 };
 
 export default function RootLayout({
@@ -13,10 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="da">
-      <body>{children}</body>
+      <body className="font-bureau paper-texture">{children}</body>
     </html>
   );
 }
-
-
-

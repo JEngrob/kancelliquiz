@@ -26,9 +26,10 @@ export function createRoom(hostId: string): string {
     hostId,
     players: new Map(),
     state: 'lobby',
-    timeline: [],
     currentRound: 0,
-    guesses: new Map(),
+    totalRounds: 10,
+    answers: new Map(),
+    answerTimestamps: new Map(),
   };
   
   const room: Room = {
@@ -59,6 +60,7 @@ export function addPlayerToRoom(roomId: string, playerId: string, playerName: st
     id: playerId,
     name: playerName,
     isActive: true,
+    score: 0,
   };
   
   room.gameState.players.set(playerId, player);
@@ -74,7 +76,8 @@ export function removePlayerFromRoom(roomId: string, playerId: string): void {
   if (!room) return;
   
   room.gameState.players.delete(playerId);
-  room.gameState.guesses.delete(playerId);
+  room.gameState.answers.delete(playerId);
+  room.gameState.answerTimestamps.delete(playerId);
   room.lastActivity = Date.now();
 }
 
@@ -102,6 +105,3 @@ export function updateRoomActivity(roomId: string): void {
 
 // Cleanup every 10 minutes
 setInterval(cleanupInactiveRooms, 10 * 60 * 1000);
-
-
-

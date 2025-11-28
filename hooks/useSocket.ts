@@ -1,26 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-// Determine Socket.IO URL
-// In production/Azure, Socket.IO runs on the same port as Next.js
-// In development, it runs on a separate port
+/**
+ * Determine Socket.IO URL
+ * In production/Azure, Socket.IO runs on the same port as Next.js
+ * In development, it runs on a separate port
+ */
 const getSocketUrl = () => {
   // If explicitly set, use that
   if (process.env.NEXT_PUBLIC_SOCKET_URL) {
     return process.env.NEXT_PUBLIC_SOCKET_URL;
   }
   
-  // In production, use the same origin (same port)
-  if (process.env.NODE_ENV === 'production' || typeof window !== 'undefined') {
-    // Use current origin (same port as frontend)
-    return typeof window !== 'undefined' ? window.location.origin : '';
+  // In browser, use current origin (same port as frontend)
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
   }
   
   // Development fallback
   return 'http://localhost:3001';
 };
-
-const SOCKET_URL = getSocketUrl();
 
 export function useSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);

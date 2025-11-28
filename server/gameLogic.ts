@@ -1,114 +1,88 @@
-import { GameState, Player } from './types';
+import { GameState, Player, Question } from './types';
+
+const MAX_TIME_SECONDS = 20;
+const MAX_POINTS = 1000;
 
 /**
- * Validates if a player's guess is correct based on the timeline
- * Returns true if the guess is in the correct position relative to existing years
+ * Validates if a player's answer is correct
  */
-export function validateGuess(guess: number, timeline: number[], correctYear: number, startYear?: number): boolean {
-  // First round: compare with start year
-  if (timeline.length === 1 && startYear !== undefined) {
-    // Check if guess and correctYear are on the same side of startYear
-    const guessBeforeStart = guess < startYear;
-    const correctBeforeStart = correctYear < startYear;
-    return guessBeforeStart === correctBeforeStart;
-  }
-
-  // Subsequent rounds: check if guess is in the same "slot" as correctYear
-  const correctPosition = getPositionRelativeToTimeline(correctYear, timeline);
-  const guessPosition = getPositionRelativeToTimeline(guess, timeline);
-  
-  // If both are exact matches to the same year, they're equal
-  if (correctPosition === 'exact' && guessPosition === 'exact') {
-    return correctYear === guess;
-  }
-  
-  return correctPosition === guessPosition;
+export function validateAnswer(answer: number, correctIndex: number): boolean {
+  return answer === correctIndex;
 }
 
 /**
- * Determines the position of a year relative to the timeline
- * Returns: 'before' | 'between' | 'after' | 'exact'
+ * Calculates points based on answer time with precision to 1/100 second (centiseconds)
+ * @param answerTimeMs Time in milliseconds when answer was submitted
+ * @param questionStartTimeMs Time in milliseconds when question was sent
+ * @returns Points (0-1000) based on speed, calculated with centisecond precision
  */
-function getPositionRelativeToTimeline(year: number, timeline: number[]): string {
-  if (timeline.length === 0) return 'before';
+export function calculateTimeBasedPoints(answerTimeMs: number, questionStartTimeMs: number): number {
+  // Calculate elapsed time in seconds with millisecond precision
+  const timeElapsedSeconds = (answerTimeMs - questionStartTimeMs) / 1000;
   
-  const sorted = [...timeline].sort((a, b) => a - b);
-  
-  if (year < sorted[0]) return 'before';
-  if (year > sorted[sorted.length - 1]) return 'after';
-  
-  // Check if it's between any two years
-  for (let i = 0; i < sorted.length - 1; i++) {
-    if (year > sorted[i] && year < sorted[i + 1]) {
-      return 'between';
-    }
+  // If answered after 20 seconds, no points
+  if (timeElapsedSeconds >= MAX_TIME_SECONDS) {
+    return 0;
   }
   
-  // Check if it matches exactly
-  if (sorted.includes(year)) return 'exact';
+  // Linear interpolation: 1000 points at 0s, 0 points at 20s
+  // Formula: points = 1000 * (1 - timeElapsed / 20)
+  // This gives different points for every centisecond difference
+  const points = MAX_POINTS * (1 - timeElapsedSeconds / MAX_TIME_SECONDS);
   
-  return 'between';
+  // Round to 2 decimal places (centisecond precision in points)
+  // This ensures that 0.01 second difference gives different points
+  return Math.round(points * 100) / 100;
 }
 
 /**
- * Inserts a year into the timeline in chronological order
- * Prevents duplicates - if year already exists, returns timeline unchanged
+ * Evaluates all answers and updates player scores with time-based points
+ * Returns list of players who answered correctly and incorrectly
  */
-export function insertYearIntoTimeline(year: number, timeline: number[]): number[] {
-  // Check if year already exists in timeline
-  if (timeline.includes(year)) {
-    return timeline; // Return unchanged if duplicate
+export function evaluateAnswers(gameState: GameState): { correct: string[], incorrect: string[] } {
+  const correct: string[] = [];
+  const incorrect: string[] = [];
+  
+  if (!gameState.currentQuestion || !gameState.questionStartTime) {
+    return { correct, incorrect };
   }
   
-  const newTimeline = [...timeline, year];
-  return newTimeline.sort((a, b) => a - b);
-}
-
-/**
- * Evaluates all guesses and marks players as inactive if they guessed wrong
- */
-export function evaluateGuesses(gameState: GameState): { eliminated: string[], active: string[] } {
-  const eliminated: string[] = [];
-  const active: string[] = [];
-  
-  if (!gameState.correctYear) {
-    return { eliminated, active };
-  }
+  const correctIndex = gameState.currentQuestion.correctIndex;
   
   gameState.players.forEach((player, playerId) => {
     if (!player.isActive) {
-      return; // Already eliminated
+      return; // Already inactive
     }
     
-    const guess = gameState.guesses.get(playerId);
-    if (guess === undefined) {
-      // No guess submitted - eliminate
-      eliminated.push(playerId);
-      player.isActive = false;
+    const answer = gameState.answers.get(playerId);
+    const answerTimestamp = gameState.answerTimestamps.get(playerId);
+    
+    if (answer === undefined || answerTimestamp === undefined) {
+      // No answer submitted - mark as incorrect
+      incorrect.push(playerId);
       return;
     }
     
-    const isValid = validateGuess(guess, gameState.timeline, gameState.correctYear!, gameState.startYear);
+    const isCorrect = validateAnswer(answer, correctIndex);
     
-    if (isValid) {
-      active.push(playerId);
+    if (isCorrect) {
+      correct.push(playerId);
+      // Calculate time-based points with centisecond precision
+      const points = calculateTimeBasedPoints(answerTimestamp, gameState.questionStartTime!);
+      player.score += points;
     } else {
-      eliminated.push(playerId);
-      player.isActive = false;
+      incorrect.push(playerId);
     }
   });
   
-  return { eliminated, active };
+  return { correct, incorrect };
 }
 
 /**
- * Checks if game should end (only one or zero active players left)
+ * Checks if game should end (all rounds completed)
  */
 export function checkGameEnd(gameState: GameState): boolean {
-  const activePlayers = Array.from(gameState.players.values()).filter(p => p.isActive);
-  
-  if (activePlayers.length <= 1) {
-    gameState.winner = activePlayers.length === 1 ? activePlayers[0].id : undefined;
+  if (gameState.currentRound >= gameState.totalRounds) {
     gameState.state = 'finished';
     return true;
   }
@@ -116,3 +90,13 @@ export function checkGameEnd(gameState: GameState): boolean {
   return false;
 }
 
+/**
+ * Gets the winner(s) based on highest score
+ */
+export function getWinners(gameState: GameState): Player[] {
+  const players = Array.from(gameState.players.values());
+  if (players.length === 0) return [];
+  
+  const maxScore = Math.max(...players.map(p => p.score));
+  return players.filter(p => p.score === maxScore);
+}

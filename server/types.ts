@@ -2,7 +2,14 @@ export interface Player {
   id: string;
   name: string;
   isActive: boolean;
-  currentGuess?: number;
+  score: number;
+  currentAnswer?: number; // Index of chosen option (0-3)
+}
+
+export interface Question {
+  text: string;
+  options: string[];
+  correctIndex: number; // Index of correct option (0-3)
 }
 
 export interface GameState {
@@ -10,12 +17,15 @@ export interface GameState {
   hostId: string;
   players: Map<string, Player>;
   state: 'lobby' | 'playing' | 'round-results' | 'finished';
-  startYear?: number;
-  timeline: number[]; // Sorted array of years
+  currentQuestion?: Question;
   currentRound: number;
-  correctYear?: number;
-  guesses: Map<string, number>; // playerId -> year guess
-  winner?: string;
+  totalRounds: number;
+  answers: Map<string, number>; // playerId -> answer index
+  answerTimestamps: Map<string, number>; // playerId -> timestamp when answered (milliseconds)
+  questionStartTime?: number; // Timestamp when question was sent (milliseconds)
+  quizFilename?: string; // Filename of selected quiz
+  quizQuestions?: Question[]; // Pre-loaded quiz questions
+  quizQuestionIndex?: number; // Current index in quiz questions array
 }
 
 export interface Room {
@@ -23,6 +33,3 @@ export interface Room {
   createdAt: number;
   lastActivity: number;
 }
-
-
-

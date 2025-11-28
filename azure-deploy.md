@@ -69,12 +69,20 @@ PORT=8080
 
 Hvis du bruger Linux:
 
-1. Gå til "Configuration" > "General settings"
-2. I "Startup Command" feltet, indtast:
+1. I venstre navigation pane, find **"Settings"** og klik på **"Configuration (preview)"**
+2. Gå til **"General settings"** tab (øverst på siden)
+3. **Scroll ned på siden** - Startup Command feltet ligger nederst på siden, efter alle de andre indstillinger
+4. Find **"Startup Command"** feltet (et tekstfelt) og indtast:
    ```
-   npm run start:production
+   cd /home/site/wwwroot && npm run start:production
    ```
-3. Klik "Save"
+   **Vigtigt:** `cd /home/site/wwwroot &&` sikrer at npm kører fra den korrekte mappe hvor `package.json` ligger.
+   
+   **Note:** Azure build system (Oryx) kører automatisk `npm run build` under deployment via `.oryx-build.sh`. Hvis appen ikke starter, prøv:
+   ```
+   cd /home/site/wwwroot && npm run build && npm run start:production
+   ```
+4. Klik **"Save"** (øverst på siden)
 
 #### Trin 5: Deploy Kode
 
@@ -164,7 +172,17 @@ az webapp config appsettings set \
 az webapp config set \
   --name hitster-online \
   --resource-group hitster-rg \
-  --startup-file "npm run start:production"
+  --startup-file "cd /home/site/wwwroot && npm run start:production"
+```
+
+**Vigtigt:** `cd /home/site/wwwroot &&` sikrer at npm kører fra den korrekte mappe hvor `package.json` ligger.
+
+**Note:** Hvis appen ikke starter, prøv at inkludere build i startup command:
+```bash
+az webapp config set \
+  --name hitster-online \
+  --resource-group hitster-rg \
+  --startup-file "cd /home/site/wwwroot && npm run build && npm run start:production"
 ```
 
 #### Deploy Kode
@@ -187,6 +205,38 @@ az webapp up \
 
 ### Troubleshooting
 
+#### App Container Failed to Start
+
+Dette er den mest almindelige fejl. Se **AZURE-TROUBLESHOOTING.md** for detaljerede instruktioner.
+
+**Hurtig fix:**
+
+1. **Tjek Log Stream først** (vigtigste skridt):
+   - Gå til "Log stream" i Azure Portal
+   - Se efter specifikke fejlmeddelelser
+
+2. **Verificer Startup Command**:
+   - Gå til "Configuration" > "General settings"
+   - Startup Command skal være: `cd /home/site/wwwroot && npm run start:production`
+   - **Vigtigt:** Hvis du ser fejl "ENOENT: no such file or directory, open '/package.json'", betyder det at npm kører fra forkert directory. Brug altid `cd /home/site/wwwroot &&` før npm kommandoen.
+   - Hvis det ikke virker, prøv: `cd /home/site/wwwroot && npm run build && npm run start:production`
+
+3. **Verificer Environment Variables**:
+   - `NODE_ENV=production`
+   - `NEXT_PUBLIC_URL=https://<din-app>.azurewebsites.net`
+   - `NEXT_PUBLIC_SOCKET_URL=https://<din-app>.azurewebsites.net`
+   - `PORT=8080`
+
+4. **Verificer Build Process**:
+   - Tjek at `.oryx-build.sh` eksisterer og indeholder `npm run build`
+   - Tjek at `.next` mappen eksisterer efter deployment
+
+5. **Test lokalt først**:
+   ```bash
+   npm run build
+   npm run start:production
+   ```
+
 #### App starter ikke
 
 1. Tjek logs i Azure Portal:
@@ -196,6 +246,8 @@ az webapp up \
 2. Verificer environment variables er sat korrekt
 
 3. Tjek at Node.js version matcher (18 eller 20)
+
+4. Se **AZURE-TROUBLESHOOTING.md** for detaljerede troubleshooting trin
 
 #### Socket.IO virker ikke
 

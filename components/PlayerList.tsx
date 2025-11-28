@@ -4,78 +4,60 @@ interface Player {
   id: string;
   name: string;
   isActive: boolean;
-  currentGuess?: number;
+  score: number;
+  currentAnswer?: number;
 }
 
 interface PlayerListProps {
   players: Player[];
-  showGuesses?: boolean;
-  guesses?: { playerId: string; year: number }[];
   gameState?: 'lobby' | 'playing' | 'round-results' | 'finished';
 }
 
-export default function PlayerList({ players, showGuesses = false, guesses = [], gameState = 'lobby' }: PlayerListProps) {
+export default function PlayerList({ players, gameState = 'lobby' }: PlayerListProps) {
   if (players.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-4">
-        Ingen spillere endnu
+      <div className="panel-kommunal-inset p-6 text-center">
+        <div className="text-4xl mb-2 opacity-50">📭</div>
+        <p className="text-ink-light text-sm">Ingen deltagere registreret endnu</p>
+        <p className="text-ink-light text-xs mt-1 italic">
+          Del adgangskoden med potentielle deltagere
+        </p>
       </div>
     );
   }
 
-  // Check if player has submitted a guess
-  const hasSubmittedGuess = (playerId: string) => {
-    return guesses.some(g => g.playerId === playerId);
-  };
-
   return (
     <div className="space-y-2">
-      {players.map((player) => {
-        const hasGuess = hasSubmittedGuess(player.id);
-        const isPlaying = gameState === 'playing' && player.isActive;
-        
-        return (
-          <div
-            key={player.id}
-            className={`flex items-center justify-between p-3 rounded-lg ${
-              player.isActive
-                ? 'bg-green-50 border border-green-200'
-                : 'bg-gray-100 border border-gray-200 opacity-60'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-full ${
-                player.isActive ? 'bg-green-500' : 'bg-gray-400'
-              }`}></span>
-              <span className={`font-medium ${
-                player.isActive ? 'text-gray-900' : 'text-gray-500'
-              }`}>
-                {player.name}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {isPlaying && (
-                <span className={`text-xs font-semibold ${
-                  hasGuess ? 'text-green-600' : 'text-orange-600'
-                }`}>
-                  {hasGuess ? '✓ Gæt afgivet' : '⏳ Venter'}
-                </span>
-              )}
-              {showGuesses && player.currentGuess !== undefined && (
-                <span className="text-sm text-gray-600 font-mono">
-                  {player.currentGuess}
-                </span>
-              )}
-              {!player.isActive && (
-                <span className="text-xs text-red-600 font-semibold">UDE</span>
-              )}
-            </div>
+      {players.map((player, index) => (
+        <div
+          key={player.id}
+          className={`flex items-center justify-between p-3 border-2 transition-all ${
+            player.isActive
+              ? 'bg-godkendt/10 border-godkendt'
+              : 'bg-paper-aged border-brun-moerk/30 opacity-60'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-ink-light font-bureau w-6">{index + 1}.</span>
+            <span className={`w-3 h-3 ${
+              player.isActive ? 'bg-godkendt' : 'bg-ink-light/30'
+            }`}></span>
+            <span className={`font-bold ${
+              player.isActive ? 'text-ink-black' : 'text-ink-light'
+            }`}>
+              {player.name}
+            </span>
+            {!player.isActive && (
+              <span className="text-xs text-stempel-roed italic">(offline)</span>
+            )}
           </div>
-        );
-      })}
+          <div className="flex items-center gap-3">
+            {gameState !== 'lobby' && (
+              <span className="score-badge text-sm">{player.score}</span>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
-
-
-

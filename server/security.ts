@@ -2,26 +2,49 @@
  * Security utilities for input validation and sanitization
  */
 
+// Max lengths for content
+const MAX_LENGTHS = {
+  PLAYER_NAME: 50,
+  QUESTION_TEXT: 500,
+  OPTION_TEXT: 200,
+};
+
 /**
- * Sanitizes player name to prevent XSS attacks
- * Removes HTML tags and limits length
+ * Base sanitization function to prevent XSS attacks
  */
-export function sanitizePlayerName(name: string): string {
-  if (!name || typeof name !== 'string') {
+function sanitizeText(text: string, maxLength: number): string {
+  if (!text || typeof text !== 'string') {
     return '';
   }
   
-  // Remove HTML tags and limit length
-  let sanitized = name
+  return text
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/[<>]/g, '') // Remove remaining angle brackets
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
     .trim()
-    .substring(0, 50); // Max 50 characters
-  
-  // Remove control characters
-  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
-  
+    .substring(0, maxLength);
+}
+
+/**
+ * Sanitizes player name to prevent XSS attacks
+ */
+export function sanitizePlayerName(name: string): string {
+  const sanitized = sanitizeText(name, MAX_LENGTHS.PLAYER_NAME);
   return sanitized || 'Spiller';
+}
+
+/**
+ * Sanitizes question text to prevent XSS attacks
+ */
+export function sanitizeQuestionText(text: string): string {
+  return sanitizeText(text, MAX_LENGTHS.QUESTION_TEXT);
+}
+
+/**
+ * Sanitizes answer option text to prevent XSS attacks
+ */
+export function sanitizeOptionText(text: string): string {
+  return sanitizeText(text, MAX_LENGTHS.OPTION_TEXT);
 }
 
 /**
@@ -34,18 +57,6 @@ export function validateRoomId(roomId: string): boolean {
   
   // Room ID should be 6 alphanumeric characters
   return /^[A-Z0-9]{6}$/.test(roomId.toUpperCase());
-}
-
-/**
- * Validates year input
- */
-export function validateYear(year: number): boolean {
-  if (typeof year !== 'number' || isNaN(year)) {
-    return false;
-  }
-  
-  // Year must be between 1900 and 2100
-  return year >= 1900 && year <= 2100 && Number.isInteger(year);
 }
 
 /**
@@ -102,4 +113,3 @@ export function cleanupRateLimits(): void {
 setInterval(cleanupRateLimits, 5 * 60 * 1000);
 
 export { RATE_LIMIT };
-

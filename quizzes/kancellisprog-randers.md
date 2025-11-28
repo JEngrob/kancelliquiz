@@ -1,4 +1,3 @@
-```md
 # Kancellisprog og Randers Kommune
 
 **Titel:** Kancellisprog og Randers Kommune  
@@ -368,4 +367,3 @@
 **D)** Vi skal lave gruppeøvelser med LEGO.
 
 **Korrekt svar:** B
-```

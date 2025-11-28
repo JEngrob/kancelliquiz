@@ -8,6 +8,7 @@ on:
 
 env:
   NODE_VERSION: '20.x'
+  AZURE_WEBAPP_NAME: kancelliquiz-randers
 
 jobs:
   build-and-deploy:
@@ -31,11 +32,16 @@ jobs:
       env:
         NODE_ENV: production
 
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: .
+    - name: Create deployment package
+      run: |
+        # Remove unnecessary files to reduce package size
+        rm -rf .git .github .playwright-mcp scripts
+        # Create zip for deployment
+        zip -r deploy.zip . -x "*.git*" -x "node_modules/.cache/*"
 
-# Trigger deployment
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: deploy.zip

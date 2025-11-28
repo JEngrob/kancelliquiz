@@ -18,6 +18,9 @@ export interface Quiz {
  * Parses a quiz markdown file and returns a Quiz object
  */
 function parseQuizMarkdown(content: string, filename: string): Quiz {
+  // Remove markdown code block syntax if present
+  content = content.replace(/^```md\s*\n/, '').replace(/\n```\s*$/, '');
+  
   const lines = content.split('\n');
   let currentQuestion: Partial<Question> | null = null;
   const questions: Question[] = [];
@@ -29,13 +32,19 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
   let i = 0;
   
   // Parse header
-  if (lines[0].startsWith('# ')) {
-    title = lines[0].substring(2).trim();
+  if (lines[0] && lines[0].trim().startsWith('# ')) {
+    title = lines[0].trim().substring(2).trim();
   }
   
-  // Parse metadata
+  // Parse metadata and questions
   while (i < lines.length) {
     const line = lines[i].trim();
+    
+    // Skip empty lines and code block markers
+    if (!line || line === '```md' || line === '```') {
+      i++;
+      continue;
+    }
     
     if (line.startsWith('**Titel:**')) {
       title = line.substring(9).trim();
@@ -43,11 +52,13 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
       description = line.substring(16).trim();
     } else if (line.startsWith('**Antal spørgsmål:**')) {
       questionCount = parseInt(line.substring(20).trim(), 10);
-    } else if (line.startsWith('## Spørgsmål')) {
-      // Start of a new question
-      if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4) {
+    } else if (line.startsWith('## ') && !line.startsWith('## Spørgsmål')) {
+      // Any ## heading (except "Spørgsmål") starts a new question
+      // Save previous question if valid
+      if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4 && currentQuestion.correctIndex >= 0) {
         questions.push(currentQuestion as Question);
       }
+      // Start new question
       currentQuestion = {
         text: '',
         options: [],
@@ -58,7 +69,7 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
         currentQuestion.text = line.substring(9).trim();
       }
     } else if (line.match(/^\*\*[A-D]\)\*\*/)) {
-      // Answer option
+      // Answer option - format: **A)** Option text
       if (currentQuestion) {
         const optionText = line.replace(/^\*\*[A-D]\)\*\*\s*/, '').trim();
         if (!currentQuestion.options) {
@@ -74,8 +85,8 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
           currentQuestion.correctIndex = index;
         }
       }
-    } else if (currentQuestion && currentQuestion.text && line && !line.startsWith('---')) {
-      // Continue text if it spans multiple lines
+    } else if (currentQuestion && currentQuestion.text && line && !line.startsWith('---') && !line.startsWith('##')) {
+      // Continue text if it spans multiple lines (but not if it's a new heading or separator)
       currentQuestion.text += ' ' + line.trim();
     }
     
@@ -83,7 +94,7 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
   }
   
   // Add last question
-  if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4) {
+  if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4 && currentQuestion.correctIndex >= 0) {
     questions.push(currentQuestion as Question);
   }
   

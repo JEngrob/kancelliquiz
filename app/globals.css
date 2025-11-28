@@ -104,6 +104,11 @@ body {
   color: var(--stempel-roed);
 }
 
+.stempel-advarsel {
+  border-color: #c9a86b;
+  color: #8b6914;
+}
+
 /* Retro button styles */
 .btn-kommunal {
   background: linear-gradient(180deg, var(--beige-lys) 0%, var(--beige-mellem) 100%);

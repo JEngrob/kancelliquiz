@@ -54,6 +54,8 @@ export default function HostPage() {
   const [correctIndex, setCorrectIndex] = useState(0);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [answerRevealed, setAnswerRevealed] = useState(false);
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const [resetKeepPlayers, setResetKeepPlayers] = useState(true);
 
   const currentDate = new Date().toLocaleDateString('da-DK', {
     day: '2-digit',
@@ -264,6 +266,7 @@ export default function HostPage() {
   const handleReset = (keepPlayers: boolean) => {
     if (socket) {
       socket.emit('host:reset-game', { roomId, keepPlayers });
+      setShowConfirmReset(false);
     }
   };
 
@@ -288,7 +291,7 @@ export default function HostPage() {
     <div className="min-h-screen bg-paper-cream paper-texture py-6 px-4">
       <div className="max-w-6xl mx-auto">
         {/* ASCII Top Border */}
-        <div className="text-center text-brun-moerk font-bureau text-xs mb-0 overflow-hidden">
+        <div className={`text-center text-brun-moerk font-bureau text-xs mb-0 overflow-hidden transition-all ${gameState === 'lobby' ? '' : 'scale-75 -my-2'}`}>
           <div>═══════════════════════════════════════════════════════════════════════════════</div>
           <div className="bg-brun-moerk text-paper-cream py-1 tracking-[0.3em] text-[10px]">
             ██████████████████████████████████████████████████████████████████████████████████
@@ -296,41 +299,47 @@ export default function HostPage() {
         </div>
 
         {/* Header Panel */}
-        <div className="panel-kommunal p-6 mb-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className={`panel-kommunal mb-6 transition-all ${gameState === 'lobby' ? 'p-6' : 'p-3'}`}>
+          <div className={`flex flex-col ${gameState === 'lobby' ? 'md:flex-row' : 'md:flex-row'} justify-between items-center gap-2 md:gap-4`}>
             <div className="text-center md:text-left">
-              <h1 className="font-typewriter text-2xl text-brun-moerk tracking-wide">
+              <h1 className={`font-typewriter text-brun-moerk tracking-wide ${gameState === 'lobby' ? 'text-2xl' : 'text-lg'}`}>
                 QUIZMASTER-KONTROLPANEL
               </h1>
-              <p className="text-ink-light text-xs">
-                Administrationssystem for quiz-afvikling
-              </p>
+              {gameState === 'lobby' && (
+                <p className="text-ink-light text-xs">
+                  Administrationssystem for quiz-afvikling
+                </p>
+              )}
             </div>
 
             <div className="text-center">
               <p className="text-xs text-ink-light mb-1">ADGANGSKODE TIL DELTAGELSE</p>
-              <div className="bg-paper-aged border-3 border-brun-moerk p-3 shadow-kommunal-sm">
-                <p className="text-4xl font-bureau font-bold text-brun-moerk tracking-[0.3em]">
+              <div className={`bg-paper-aged border-3 border-brun-moerk shadow-kommunal-sm ${gameState === 'lobby' ? 'p-3' : 'p-2'}`}>
+                <p className={`font-bureau font-bold text-brun-moerk tracking-[0.3em] ${gameState === 'lobby' ? 'text-4xl' : 'text-2xl'}`}>
                   {roomId}
                 </p>
               </div>
-              <p className="text-xs text-ink-light mt-1">
-                Del denne kode med deltagerne
-              </p>
+              {gameState === 'lobby' && (
+                <p className="text-xs text-ink-light mt-1">
+                  Del denne kode med deltagerne
+                </p>
+              )}
             </div>
 
-            <div className="text-xs text-ink-light text-center md:text-right border border-dashed border-brun-moerk p-2">
-              <div>Sagsnr.: QUIZ-{roomId}</div>
-              <div>Dato: {currentDate}</div>
-              <div>Status: <span className="text-godkendt font-bold">AKTIV</span></div>
-            </div>
+            {gameState === 'lobby' && (
+              <div className="text-xs text-ink-light text-center md:text-right border border-dashed border-brun-moerk p-2">
+                <div>Sagsnr.: QUIZ-{roomId}</div>
+                <div>Dato: {currentDate}</div>
+                <div>Status: <span className="text-godkendt font-bold">AKTIV</span></div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Winner Screen */}
         {gameState === 'finished' && (
           <div className="mb-6">
-            <WinnerScreen winnerName={winners.length > 0 ? winners.map(w => `${w.name} (${w.score} point)`).join(', ') : undefined} />
+            <WinnerScreen winners={winners} />
           </div>
         )}
 
@@ -443,20 +452,20 @@ export default function HostPage() {
 
             {/* Playing - Show current quiz question info */}
             {gameState === 'playing' && selectedQuiz && (
-              <div className="panel-kommunal p-6">
-                <div className="flex justify-between items-center mb-4">
+              <div className="panel-kommunal p-3">
+                <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-brun-moerk font-bold">RUNDE</span>
-                    <span className="score-badge">{currentRound}/{totalRounds}</span>
+                    <span className="text-brun-moerk font-bold text-sm">RUNDE</span>
+                    <span className="score-badge text-xs px-2 py-1">{currentRound}/{totalRounds}</span>
                   </div>
                   <div className="stempel text-xs">QUIZ-AKTIV</div>
                 </div>
-                <div className="panel-kommunal-inset p-4">
-                  <p className="text-xs text-ink-light mb-2">Quiz:</p>
-                  <p className="font-bold text-ink-black">
+                <div className="panel-kommunal-inset p-3">
+                  <p className="text-xs text-ink-light mb-1">Quiz:</p>
+                  <p className="font-bold text-ink-black text-sm">
                     {availableQuizzes.find(q => q.filename === selectedQuiz)?.title}
                   </p>
-                  <p className="text-xs text-ink-faded mt-2">
+                  <p className="text-xs text-ink-faded mt-1">
                     Spørgsmål sendes automatisk fra quiz
                   </p>
                 </div>
@@ -465,22 +474,22 @@ export default function HostPage() {
 
             {/* Question Sent - Waiting for answers */}
             {gameState === 'question-sent' && (
-              <div className="panel-kommunal p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-brun-moerk font-bold">RUNDE {currentRound}/{totalRounds}</span>
+              <div className="panel-kommunal p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-brun-moerk font-bold text-sm">RUNDE {currentRound}/{totalRounds}</span>
                   <div className="stempel text-xs">AFVENTER SVAR</div>
                 </div>
 
-                <div className="panel-kommunal-inset p-4 mb-4">
+                <div className="panel-kommunal-inset p-2 mb-2">
                   <p className="text-xs text-ink-light mb-1">Spørgsmål:</p>
-                  <p className="text-ink-black font-bold">{questionText}</p>
+                  <p className="text-ink-black font-bold text-sm">{questionText}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="grid grid-cols-2 gap-1 mb-2">
                   {options.map((option, index) => (
                     <div
                       key={index}
-                      className={`p-2 text-xs border-2 ${
+                      className={`p-1 text-xs border-2 ${
                         answerRevealed && correctIndex === index
                           ? 'bg-godkendt/20 border-godkendt'
                           : 'bg-paper-aged border-brun-moerk/50'
@@ -491,17 +500,17 @@ export default function HostPage() {
                   ))}
                 </div>
 
-                <div className="text-center mb-4 p-4 bg-paper-aged border-2 border-brun-moerk">
+                <div className="text-center mb-2 p-2 bg-paper-aged border-2 border-brun-moerk">
                   <p className="text-xs text-ink-light mb-1">MODTAGNE SVAR</p>
-                  <p className="text-3xl font-bold text-brun-moerk font-bureau">
+                  <p className="text-2xl font-bold text-brun-moerk font-bureau">
                     {answeredCount}
-                    <span className="text-lg text-ink-light"> / {players.filter(p => p.isActive).length}</span>
+                    <span className="text-sm text-ink-light"> / {players.filter(p => p.isActive).length}</span>
                   </p>
                 </div>
 
                 <button
                   onClick={handleRevealAnswer}
-                  className="btn-kommunal w-full bg-gradient-to-b from-[#c9a86b] to-svar-b text-paper-cream border-[#6b5a2a]"
+                  className="btn-kommunal btn-sm w-full bg-gradient-to-b from-[#c9a86b] to-svar-b text-paper-cream border-[#6b5a2a] text-xs py-2"
                 >
                   AFSLØRING AF KORREKT SVAR
                 </button>
@@ -528,12 +537,6 @@ export default function HostPage() {
                   >
                     FORTSÆT TIL NÆSTE RUNDE
                   </button>
-                  <button
-                    onClick={() => handleReset(true)}
-                    className="btn-kommunal w-full"
-                  >
-                    NULSTIL QUIZ
-                  </button>
                 </div>
               </div>
             )}
@@ -547,20 +550,6 @@ export default function HostPage() {
                 <h3 className="font-typewriter text-xl text-brun-moerk mb-4">
                   Quiz gennemført!
                 </h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => handleReset(true)}
-                    className="btn-kommunal btn-kommunal-primary w-full"
-                  >
-                    NY QUIZ (BEHOLD DELTAGERE)
-                  </button>
-                  <button
-                    onClick={() => handleReset(false)}
-                    className="btn-kommunal w-full bg-stempel-roed/20 border-stempel-roed text-stempel-roed hover:bg-stempel-roed/30"
-                  >
-                    AFSLUT OG NULSTIL ALT
-                  </button>
-                </div>
               </div>
             )}
           </div>
@@ -584,35 +573,35 @@ export default function HostPage() {
             )}
 
             {/* Answer Results */}
-            {(gameState === 'round-results' || gameState === 'finished') && answerResults.length > 0 && (
-              <div className="panel-kommunal p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-brun-moerk font-bold">§ 3.</span>
-                  <span className="font-bold text-ink-black">SVARPROTOKOL</span>
+            {(gameState === 'round-results' || (gameState === 'finished' && currentRound < totalRounds)) && answerResults.length > 0 && (
+              <div className="panel-kommunal p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-brun-moerk font-bold text-sm">§ 3.</span>
+                  <span className="font-bold text-ink-black text-sm">SVARPROTOKOL</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 max-h-48 overflow-y-auto">
                   {answerResults.map((result) => (
                     <div
                       key={result.playerId}
-                      className={`flex justify-between items-center p-3 border-2 ${
+                      className={`flex justify-between items-center p-2 border-2 text-xs ${
                         result.isCorrect
                           ? 'bg-godkendt/10 border-godkendt'
                           : 'bg-stempel-roed/10 border-stempel-roed'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className={`w-3 h-3 ${
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className={`w-2 h-2 flex-shrink-0 ${
                           result.isCorrect ? 'bg-godkendt' : 'bg-stempel-roed'
                         }`}></span>
-                        <span className="font-bold text-ink-black">{result.playerName}</span>
+                        <span className="font-bold text-ink-black truncate">{result.playerName}</span>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {result.answerText !== undefined ? (
-                          <span className="text-sm text-ink-faded">{result.answerText}</span>
+                          <span className="text-ink-faded hidden sm:inline">{result.answerText}</span>
                         ) : (
-                          <span className="text-sm text-ink-light italic">Intet svar</span>
+                          <span className="text-ink-light italic hidden sm:inline">Intet svar</span>
                         )}
-                        <span className={`font-bold text-lg ${
+                        <span className={`font-bold ${
                           result.isCorrect ? 'text-godkendt' : 'text-stempel-roed'
                         }`}>
                           {result.isCorrect ? '✓' : '✗'}
@@ -626,33 +615,33 @@ export default function HostPage() {
 
             {/* Scoreboard */}
             {gameState !== 'lobby' && (
-              <div className="panel-kommunal p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-2xl">🏆</span>
-                  <span className="font-bold text-ink-black">POINTTAVLE</span>
+              <div className="panel-kommunal p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🏆</span>
+                  <span className="font-bold text-ink-black text-sm">POINTTAVLE</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1 max-h-56 overflow-y-auto">
                   {[...players]
                     .sort((a, b) => b.score - a.score)
                     .map((player, index) => (
                       <div
                         key={player.id}
-                        className={`flex justify-between items-center p-3 border-2 ${
+                        className={`flex justify-between items-center p-2 border-2 text-xs ${
                           index === 0 && player.score > 0
                             ? 'bg-brun-lys/30 border-brun-lys'
                             : 'bg-paper-aged border-brun-moerk/30'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl w-8 text-center">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className="w-6 text-center flex-shrink-0">
                             {index === 0 && player.score > 0 ? '🥇' : 
                              index === 1 && player.score > 0 ? '🥈' : 
                              index === 2 && player.score > 0 ? '🥉' : 
                              `${index + 1}.`}
                           </span>
-                          <span className="font-bold text-ink-black">{player.name}</span>
+                          <span className="font-bold text-ink-black truncate">{player.name}</span>
                         </div>
-                        <span className="score-badge text-lg">{player.score.toFixed(2)}</span>
+                        <span className="score-badge text-xs px-2 py-1">{player.score.toFixed(1)}</span>
                       </div>
                     ))}
                 </div>
@@ -661,8 +650,48 @@ export default function HostPage() {
           </div>
         </div>
 
+        {/* Confirmation Dialog */}
+        {showConfirmReset && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="panel-kommunal p-6 max-w-md shadow-lg">
+              <div className="stempel stempel-advarsel text-sm mb-4 inline-block">
+                BEKRÆFTELSE KRÆVET
+              </div>
+              <h3 className="font-typewriter text-lg text-brun-moerk mb-4">
+                Er du sikker?
+              </h3>
+              <p className="text-ink-black mb-2">
+                Du er ved at {resetKeepPlayers ? 'starte ny quiz' : 'afslutte og nulstille HELE quizzen'}.
+              </p>
+              <p className="text-xs text-ink-light mb-4">
+                {resetKeepPlayers 
+                  ? 'Deltagerne bliver bevaret, men scoren nulstilles.' 
+                  : 'ALLE deltagere og score slettes permanent!'}
+              </p>
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleReset(resetKeepPlayers)}
+                  className={`btn-kommunal w-full ${
+                    resetKeepPlayers
+                      ? 'btn-kommunal-primary'
+                      : 'bg-stempel-roed/20 border-stempel-roed text-stempel-roed hover:bg-stempel-roed/30'
+                  }`}
+                >
+                  {resetKeepPlayers ? 'JA, START NY QUIZ' : 'JA, AFSLUT OG NULSTIL ALT'}
+                </button>
+                <button
+                  onClick={() => setShowConfirmReset(false)}
+                  className="btn-kommunal w-full"
+                >
+                  ANNULLER
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ASCII Bottom Border */}
-        <div className="text-center text-brun-moerk font-bureau text-xs mt-6 overflow-hidden">
+        <div className={`text-center text-brun-moerk font-bureau text-xs overflow-hidden transition-all ${gameState === 'lobby' ? 'mt-6' : 'mt-2 scale-75 -mb-2'}`}>
           <div className="bg-brun-moerk text-paper-cream py-1 tracking-[0.3em] text-[10px]">
             ██████████████████████████████████████████████████████████████████████████████████
           </div>
@@ -670,9 +699,37 @@ export default function HostPage() {
         </div>
 
         {/* Print timestamp */}
-        <div className="text-center mt-4 text-xs text-ink-light font-bureau">
-          &gt;&gt;&gt; UDSKREVET: {currentDate} {new Date().toLocaleTimeString('da-DK')} &lt;&lt;&lt;
-        </div>
+        {gameState === 'lobby' && (
+          <div className="text-center mt-4 text-xs text-ink-light font-bureau">
+            &gt;&gt;&gt; UDSKREVET: {currentDate} {new Date().toLocaleTimeString('da-DK')} &lt;&lt;&lt;
+          </div>
+        )}
+
+        {/* Bottom Control Buttons - Always visible except in lobby */}
+        {gameState !== 'lobby' && (
+          <div className="mt-6 pt-4 border-t-4 border-brun-lys">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  setShowConfirmReset(true);
+                  setResetKeepPlayers(true);
+                }}
+                className="btn-kommunal btn-kommunal-primary py-3 text-sm"
+              >
+                NY QUIZ (BEHOLD DELTAGERE)
+              </button>
+              <button
+                onClick={() => {
+                  setShowConfirmReset(true);
+                  setResetKeepPlayers(false);
+                }}
+                className="btn-kommunal py-3 text-sm bg-stempel-roed/20 border-stempel-roed text-stempel-roed hover:bg-stempel-roed/30"
+              >
+                AFSLUT OG NULSTIL ALT
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

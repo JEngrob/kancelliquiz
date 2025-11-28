@@ -338,42 +338,55 @@ export default function HostPage() {
           {/* Left Column - Controls */}
           <div className="space-y-6">
             {/* Quiz Selection */}
-            {gameState === 'lobby' && showQuizSelection && availableQuizzes.length > 0 && (
+            {gameState === 'lobby' && showQuizSelection && (
               <div className="panel-kommunal p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-brun-moerk font-bold">§ 0.</span>
                   <span className="font-bold text-ink-black">VÆLG QUIZ</span>
                 </div>
-                <p className="text-ink-light text-sm mb-4 pl-6">
-                  Vælg en præ-genereret quiz:
-                </p>
-                <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-                  {availableQuizzes.map((quiz) => (
-                    <button
-                      key={quiz.filename}
-                      onClick={() => handleSelectQuiz(quiz.filename)}
-                      className={`w-full text-left p-3 border-2 transition-all ${
-                        selectedQuiz === quiz.filename
-                          ? 'bg-brun-lys/30 border-brun-moerk'
-                          : 'bg-paper-aged border-brun-moerk/30 hover:bg-beige-mellem'
-                      }`}
-                    >
-                      <div className="font-bold text-ink-black">{quiz.title}</div>
-                      {quiz.description && (
-                        <div className="text-xs text-ink-light mt-1">{quiz.description}</div>
-                      )}
-                      <div className="text-xs text-ink-faded mt-1">
-                        {quiz.questionCount} spørgsmål
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                {selectedQuiz && (
-                  <div className="mb-4 p-3 bg-godkendt/10 border-2 border-godkendt">
-                    <div className="text-xs text-ink-light mb-1">Valgt quiz:</div>
-                    <div className="font-bold text-godkendt">
-                      {availableQuizzes.find(q => q.filename === selectedQuiz)?.title}
+                {availableQuizzes.length > 0 ? (
+                  <>
+                    <p className="text-ink-light text-sm mb-4 pl-6">
+                      Vælg en præ-genereret quiz:
+                    </p>
+                    <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                      {availableQuizzes.map((quiz) => (
+                        <button
+                          key={quiz.filename}
+                          onClick={() => handleSelectQuiz(quiz.filename)}
+                          className={`w-full text-left p-3 border-2 transition-all ${
+                            selectedQuiz === quiz.filename
+                              ? 'bg-brun-lys/30 border-brun-moerk'
+                              : 'bg-paper-aged border-brun-moerk/30 hover:bg-beige-mellem'
+                          }`}
+                        >
+                          <div className="font-bold text-ink-black">{quiz.title}</div>
+                          {quiz.description && (
+                            <div className="text-xs text-ink-light mt-1">{quiz.description}</div>
+                          )}
+                          <div className="text-xs text-ink-faded mt-1">
+                            {quiz.questionCount} spørgsmål
+                          </div>
+                        </button>
+                      ))}
                     </div>
+                    {selectedQuiz && (
+                      <div className="mb-4 p-3 bg-godkendt/10 border-2 border-godkendt">
+                        <div className="text-xs text-ink-light mb-1">Valgt quiz:</div>
+                        <div className="font-bold text-godkendt">
+                          {availableQuizzes.find(q => q.filename === selectedQuiz)?.title}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-4 bg-paper-aged border-2 border-brun-moerk/30">
+                    <p className="text-ink-light text-sm mb-2">
+                      Indlæser quizer...
+                    </p>
+                    <p className="text-xs text-ink-faded">
+                      Vent venligst mens quizer indlæses fra serveren.
+                    </p>
                   </div>
                 )}
               </div>

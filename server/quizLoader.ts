@@ -55,7 +55,7 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
     } else if (line.startsWith('## ') && !line.startsWith('## Spørgsmål')) {
       // Any ## heading (except "Spørgsmål") starts a new question
       // Save previous question if valid
-      if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4 && currentQuestion.correctIndex >= 0) {
+      if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4 && currentQuestion.correctIndex !== undefined && currentQuestion.correctIndex >= 0) {
         questions.push(currentQuestion as Question);
       }
       // Start new question
@@ -94,7 +94,7 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
   }
   
   // Add last question
-  if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4 && currentQuestion.correctIndex >= 0) {
+  if (currentQuestion && currentQuestion.text && currentQuestion.options && currentQuestion.options.length === 4 && currentQuestion.correctIndex !== undefined && currentQuestion.correctIndex >= 0) {
     questions.push(currentQuestion as Question);
   }
   

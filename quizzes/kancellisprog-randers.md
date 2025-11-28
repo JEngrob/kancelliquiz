@@ -2,13 +2,13 @@
 
 **Titel:** Kancellisprog og Randers Kommune  
 **Beskrivelse:** En quiz om kancellisprog og Randers Kommune-specifikke spørgsmål  
-**Antal spørgsmål:** 28
+**Antal spørgsmål:** 25
 
 ---
 
 ## Flytning
 
-**Tekst:** Med henblik på at facilitere en hensigtsmæssig afvikling af den forestående tranportering, er det af Deres organisation påkrævet at tilvejebringe fyldestgørende information angående de pågældende effekters dimensioner.
+**Tekst:** Med henblik på at facilitere den forestående transportering er det påkrævet at tilvejebringe fyldestgørende information angående effekternes dimensioner.
 
 **A)** Flytningen er desværre blevet aflyst.  
 **B)** Vi skal bruge målene på tingene, før vi kan flytte dem.  
@@ -21,7 +21,7 @@
 
 ## Kantinen
 
-**Tekst:** I henhold til gældende regulativer vedrørende personalemæssig forplejning i kantinefaciliteten, er individuel medbringelse af egne spiselige fornødenheder ikke at anse som værende approbatorisk.
+**Tekst:** I henhold til gældende regulativer for kantinefaciliteten er individuel medbringelse af egne spiselige fornødenheder ikke approbatorisk.
 
 **A)** Du må ikke spise din medbragte mad i kantinen.  
 **B)** Kantinen tilbyder gratis mad til personalet.  
@@ -34,7 +34,7 @@
 
 ## Parken
 
-**Tekst:** Forud for iværksættelsen af enhver form for rekreativ benyttelse af det kommunalt ejede grønne areal, er det en bydende nødvendighed at indhente skriftlig dispensation fra den ansvarshavende parkforvaltningsenhed.
+**Tekst:** Forud for rekreativ benyttelse af det kommunalt ejede grønne areal er det nødvendigt at indhente skriftlig dispensation fra Veje og trafik.
 
 **A)** Det er forbudt at gå på græsset i parken.  
 **B)** Parken er lukket på ubestemt tid på grund af renovering.  
@@ -47,7 +47,7 @@
 
 ## Pølsefestivalen
 
-**Tekst:** I anledning af den forestående pølsefestivals afvikling i bykernen, vil der forefindes en temporær indskrænkning i den vederlagsfrie parkeringsadgang i de tilstødende gadeafsnit.
+**Tekst:** I anledning af pølsefestivalens afvikling ved Det Gamle Rådhus vil der forefindes temporær indskrænkning i den vederlagsfrie parkeringsadgang i tilstødende gadeafsnit.
 
 **A)** Det koster penge at komme ind til pølsefestivalen.  
 **B)** Du kan ikke parkere gratis i gaderne tæt på, når der er pølsefestival.  
@@ -60,7 +60,7 @@
 
 ## Affaldssortering
 
-**Tekst:** Det henstilles indtrængende til borgerne at udvise den fornødne omhu vedrørende den korrekte fraktionering af restprodukter, idet mangelfuld sortering vil kunne medføre en gebyrmæssig påtale.
+**Tekst:** Det henstilles indtrængende til borgerne at udvise omhu vedrørende korrekt fraktionering af restprodukter, idet mangelfuld sortering medfører gebyr.
 
 **A)** Husk at sortere dit skrald rigtigt, ellers kan du få en bøde.  
 **B)** Skraldespandene bliver tømt oftere i denne måned.  
@@ -73,7 +73,7 @@
 
 ## Gudenåen
 
-**Tekst:** Af hensyn til faunaens uforstyrrede trivsel i de ånære rekreative zoner, er anvendelse af åben ild og lignende pyrotekniske anordninger, herunder grill, strengt prohibiteret uden for de dertil etablerede faciliteter.
+**Tekst:** Af hensyn til faunaens trivsel ved åen er anvendelse af åben ild og pyrotekniske anordninger, herunder grill, strengt prohibiteret uden for etablerede faciliteter.
 
 **A)** Det er forbudt at fodre ænderne ved åen.  
 **B)** Man må slet ikke tænde bål nogen steder i hele kommunen.  
@@ -86,7 +86,7 @@
 
 ## Biblioteket
 
-**Tekst:** Såfremt en låntager undlader at returnere bibliotekarisk materiale inden for den fastsatte tidsramme, vil der automatisk blive påbegyndt en rykkerprocedure, som er behæftet med et omkostningsækvivalent afgift.
+**Tekst:** Såfremt en låntager undlader at returnere bibliotekarisk materiale inden for den fastsatte frist, vil der påbegyndes en rykkerprocedure behæftet med afgift.
 
 **A)** Biblioteket har fået nye computere til udlån.  
 **B)** Hvis du afleverer dine bøger for sent på biblioteket, får du et gebyr.  
@@ -97,48 +97,9 @@
 
 ---
 
-## Mocai-stafetten (Trafik)
-
-**Tekst:** Borgerservice skal hermed gøre opmærksom på, at i forbindelse med det årlige 'Mocai-stafetten' vil der forekomme signifikante trafikale omlægninger, hvorfor benyttelse af alternative transportmidler på det kraftigste kan anbefales.
-
-**A)** Der bliver delt gratis Mokai ud til alle i Borgerservice.  
-**B)** Alle busser i byen er aflyst hele dagen.  
-**C)** Der er 'Mocai-stafet', så der er vejspærringer. Tag cyklen eller en anden rute.  
-**D)** Du skal tilmelde dig i Borgerservice for at løbe med.
-
-**Korrekt svar:** C
-
----
-
-## Offentlighedsloven
-
-**Tekst:** Under hensyntagen til gældende bestemmelser om aktindsigt, skal enhver forespørgsel vedrørende dokumentindsyn behandles i overensstemmelse med regler om partshøring, tidsfrister og fornøden journalisering i det elektroniske sagsbehandlingssystem.
-
-**A)** Du skal huske at journalisere alt korrekt.  
-**B)** Du må gerne slette e-mails, hvis du ikke gider.  
-**C)** Alle borgere skal have et fysisk møde for at få aktindsigt.  
-**D)** Du skal sende alt videre til Borgmesterens sekretariat.
-
-**Korrekt svar:** A
-
----
-
-## Høringer
-
-**Tekst:** I forbindelse med udarbejdelsen af det planlagte høringsmateriale skal relevante eksterne og interne interessenter tildeles passende mulighed for at afgive udtalelser inden for en administrativt fastlagt frist.
-
-**A)** Vi skal sende høringen ud til dem, der skal høres.  
-**B)** Høringen bliver automatisk godkendt, hvis ingen svarer.  
-**C)** Alle dokumenter skal printes i triplikat.  
-**D)** Du må selv bestemme, hvem der høres.
-
-**Korrekt svar:** A
-
----
-
 ## Kommunikationsgodkendelse
 
-**Tekst:** Inden offentliggørelse af skriftligt materiale på eksterne digitale platforme skal kommunikationsenheden foretage sproglig og visuel kvalitetssikring for at sikre overensstemmelse med gældende kommunal brandmanual.
+**Tekst:** Inden offentliggørelse af materiale på eksterne platforme skal kommunikationsenheden foretage kvalitetssikring for overensstemmelse med kommunal brandmanual.
 
 **A)** Kommunikation skal godkende det, før det kommer på hjemmesiden.  
 **B)** Du må selv vælge farver og skrifttyper.  
@@ -151,25 +112,26 @@
 
 ## Politisk behandling
 
-**Tekst:** Sager af strategisk eller økonomisk betydning skal, forud for endelig beslutningstagen, fremsendes til politisk behandling i relevante udvalg i overensstemmelse med den etablerede mødestruktur.
+**Tekst:** Sager af strategisk eller økonomisk betydning skal, forud for endelig beslutningstagen, fremsendes til politisk behandling i relevante udvalg.
 
-**A)** Sagen skal forbi udvalg, før der kan træffes beslutning.  
-**B)** Borgmesteren kan beslutte alt uden forvaltningen.  
-**C)** Sager kan godkendes af kommunens sociale medier.  
+
+**A)** Borgmesteren kan beslutte alt uden forvaltningen.  
+**B)** Sager kan godkendes af kommunens sociale medier.  
+**C)** Sagen skal forbi udvalg, før der kan træffes beslutning.  
 **D)** Du må gerne springe udvalg over, hvis du har travlt.
 
-**Korrekt svar:** A
+**Korrekt svar:** C
 
 ---
 
-## Juraens klare hånd
+## Juraens klare hånd og juridiske vurderinger
 
-**Tekst:** Såfremt en foreslået foranstaltning ikke er i overensstemmelse med gældende lovgivning, herunder forvaltningsretlige principper om proportionalitet og saglighed, skal implementeringen bringes til omgående ophør.
+**Tekst:** Såfremt en foreslået foranstaltning ikke er lovlig, eller hvis der foreligger retlig usikkerhed, skal implementeringen ophøre og juraenheden inddrages til bindende vurdering.
 
-**A)** Hvis det er ulovligt, må vi ikke gøre det.  
-**B)** Vi prøver alligevel – måske opdager ingen det.  
-**C)** Det må kun ske, hvis det er politisk besluttet.  
-**D)** Vi må godt, hvis borgeren selv foreslår det.
+**A)** Hvis det er ulovligt eller usikkert juridisk, må vi ikke gøre det uden at spørge Jura.  
+**B)** Vi prøver alligevel – det bliver nok okay.  
+**C)** Det er højst op til den enkelte medarbejder at tolke loven.  
+**D)** Vi må godt, hvis det bliver politisk godkendt.
 
 **Korrekt svar:** A
 
@@ -177,59 +139,46 @@
 
 ## Pressehåndtering
 
-**Tekst:** Ved henvendelser fra presseorganer skal der sikres rettidig og koordineret formidling gennem kommunens kommunikationsfunktion for at understøtte en ensartet ekstern profilering.
+**Tekst:** Ved henvendelser fra presseorganer skal der sikres rettidig formidling gennem kommunens kommunikationsfunktion for at understøtte ensartet profilering.
 
-**A)** Pressehenvendelser skal gå gennem Kommunikation.  
-**B)** Alle medarbejdere må frit udtale sig som kommunens talsperson.  
-**C)** Man skal altid sige “ingen kommentarer”.  
-**D)** Spørgsmål på sociale medier kan ignoreres i 14 dage.
+**A)** Alle medarbejdere må frit udtale sig som kommunens talsperson.  
+**B)** Man skal altid sige “ingen kommentarer”.  
+**C)** Spørgsmål på sociale medier kan ignoreres i 14 dage.
+**D)** Pressehenvendelser skal gå gennem Kommunikation.  
 
-**Korrekt svar:** A
-
----
-
-## Notatpligten
-
-**Tekst:** I overensstemmelse med notatpligten skal alle sagsrelevante oplysninger, herunder mundtlige tilkendegivelser fra borgere, nedfældes i sagssystemet uden uforholdsmæssig forsinkelse.
-
-**A)** Du skal skrive ned, hvad der er relevant for sagen.  
-**B)** Mundtlige oplysninger tæller ikke.  
-**C)** Du noterer kun ting, du selv synes er vigtige.  
-**D)** Notatpligten gælder kun, hvis nogen spørger.
-
-**Korrekt svar:** A
+**Korrekt svar:** D
 
 ---
 
-## Strategisk kommunikation
+## Notatpligten og Dokumentation
 
-**Tekst:** For at sikre en proaktiv kommunikationsindsats skal alle afdelinger orientere kommunikationsenheden om potentielt mediemæssige sager af sensitiv eller politisk karakter.
+**Tekst:** I overensstemmelse med notatpligten skal alle sagsrelevante oplysninger, herunder mundtlige tilkendegivelser, nedfældes korrekt i sagssystemet uden forsinkelse.
 
-**A)** Sig til Kommunikation, hvis noget kan blive en mediesag.  
-**B)** Del først sagen på Facebook – så tager Kommunikation den derfra.  
-**C)** Kun Jura må vurdere, hvad der er en “sag”.  
-**D)** Mediesager må først håndteres efter jul.
+**A)** Mundtlige oplysninger tæller ikke, kun skriftlige.  
+**B)** Du noterer kun ting, du selv synes er vigtige.  
+**C)** Dokumentation er kun vigtig, hvis der kommer et tilsyn.
+**D)** Du skal skrive ned og dokumentere alt, hvad der er relevant for sagen. 
 
-**Korrekt svar:** A
+**Korrekt svar:** D
 
 ---
 
-## Juridiske vurderinger
+## Strategisk kommunikation og Høringer
 
-**Tekst:** Såfremt en forespørgsel indebærer tvivl om retlige fortolkningsspørgsmål, skal juraenheden inddrages med henblik på udarbejdelse af en bindende administrativ vurdering.
+**Tekst:** For at sikre en proaktiv kommunikationsindsats skal alle afdelinger orientere kommunikationsenheden om mediemæssige sager af sensitiv karakter, og relevante interessenter skal have høringsfrist.
 
-**A)** Hvis du er i tvivl om loven, skal du spørge Jura.  
-**B)** Du må selv fortolke loven, som det passer dig.  
-**C)** Vi bruger altid den løsning, der er hurtigst.  
-**D)** Jura skal kun spørges i lige uger.
+**A)** Del først sagen på sociale medier – så tager Kommunikation den derfra.  
+**B)** Sig til Kommunikation om mediemæssige sager, og giv høringsparter passende frist til at svare.  
+**C)** Kun ledelsen må vurdere, hvad der er en vigtig "sag".  
+**D)** Man kan selv bestemme, hvem der skal høres.
 
-**Korrekt svar:** A
+**Korrekt svar:** B
 
 ---
 
 ## Intern kommunikation
 
-**Tekst:** For at understøtte en transparent og koordineret informationsudveksling skal alle medarbejdere orienteres via de formelt etablerede interne kanaler, fremfor uautoriserede beskedtråde og spontane rundsendelser.
+**Tekst:** For at understøtte transparent informationsudveksling skal alle medarbejdere orienteres via formelt etablerede interne kanaler, ikke uautoriserede beskedtråde.
 
 **A)** Brug de officielle kanaler, når du informerer kolleger.  
 **B)** Send alt i Messenger – det går hurtigst.  
@@ -255,7 +204,7 @@
 
 ## Ansvarsfraskrivelse
 
-**Tekst:** Idet der henvises til almindelige retsprincipper om culpa, må det konkluderes, at kausaliteten mellem undertegnedes handlinger og den indtrufne skade er non-eksistent.
+**Tekst:** Idet der henvises til retsprincipper om culpa, konkluderes det, at kausaliteten mellem undertegnedes handlinger og den indtrufne skade er non-eksistent.
 
 **A)** Jeg vil gerne anmelde en skade til forsikringen.  
 **B)** Vi skal undersøge årsagen til ulykken nærmere.  
@@ -268,7 +217,7 @@
 
 ## Imagepleje
 
-**Tekst:** Der observeres en uhensigtsmæssig diskrepans mellem organisationens intenderede kerneværdier og den eksterne perception i den bredere offentlighed.
+**Tekst:** Der observeres uhensigtsmæssig diskrepans mellem organisationens intenderede kerneværdier og den eksterne perception i offentligheden.
 
 **A)** Vi har fået nyt logo, men ingen kan lide det.  
 **B)** Folk synes, vi er idioter / vi er i en shitstorm.  
@@ -294,7 +243,7 @@
 
 ## Maden
 
-**Tekst:** Tilførslen af kulinariske elementer forventes at indtræffe inden for en tidshorisont, der muliggør opretholdelse af det metabolistiske ligevægtspunkt.
+**Tekst:** Tilførslen af kulinariske elementer forventes at indtræffe inden for en tidshorisont, der muliggør opretholdelse af metabolistisk ligevægtspunkt.
 
 **A)** Vi skal huske at dyrke motion efter maden.  
 **B)** Køkkenet er desværre brændt ned.  
@@ -333,7 +282,7 @@
 
 ## Forhandlingen
 
-**Tekst:** Der arbejdes mod en bred konsensus, hvor samtlige interessenter føler sig hørt, omend konkrete resultater afventer yderligere bilaterale forhandlinger.
+**Tekst:** Der arbejdes mod bred konsensus, hvor samtlige interessenter føler sig hørt, omend konkrete resultater afventer bilaterale forhandlinger.
 
 **A)** Vi er fuldstændig enige om alt.  
 **B)** Vi snakker og snakker, men har ikke besluttet noget endnu.  

@@ -399,7 +399,7 @@ export default function HostPage() {
                   <span className="text-brun-moerk font-bold">§ 1.</span>
                   <span className="font-bold text-ink-black">IGANGSÆTTELSE AF QUIZ</span>
                 </div>
-                {selectedQuiz && (
+                {selectedQuiz ? (
                   <div className="mb-4 p-3 bg-paper-aged border-2 border-brun-moerk/30">
                     <div className="text-xs text-ink-light mb-1">Valgt quiz:</div>
                     <div className="font-bold text-ink-black">
@@ -407,6 +407,13 @@ export default function HostPage() {
                     </div>
                     <div className="text-xs text-ink-faded mt-1">
                       {totalRounds} spørgsmål
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mb-4 p-3 bg-stempel-roed/10 border-2 border-stempel-roed">
+                    <div className="text-xs text-stempel-roed mb-1">⚠️ Ingen quiz valgt</div>
+                    <div className="text-xs text-ink-light">
+                      Vælg en quiz først for at starte spillet.
                     </div>
                   </div>
                 )}
@@ -425,14 +432,12 @@ export default function HostPage() {
                     : `START QUIZ (${players.length} ${players.length === 1 ? 'deltager' : 'deltagere'})`
                   }
                 </button>
-                {!showQuizSelection && (
-                  <button
-                    onClick={() => setShowQuizSelection(true)}
-                    className="btn-kommunal w-full mt-2"
-                  >
-                    VÆLG ANDEN QUIZ
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowQuizSelection(true)}
+                  className="btn-kommunal w-full mt-2"
+                >
+                  {selectedQuiz ? 'VÆLG ANDEN QUIZ' : 'VÆLG QUIZ'}
+                </button>
               </div>
             )}
 

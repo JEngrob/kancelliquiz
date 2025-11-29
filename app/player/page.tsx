@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 
-type PlayerState = 'join' | 'waiting' | 'answering' | 'answered' | 'result';
+type PlayerState = 'join' | 'waiting' | 'answering' | 'answered' | 'result' | 'reconnecting';
 
 const optionLabels = ['A', 'B', 'C', 'D'];
 const optionStyles = [
@@ -14,7 +14,17 @@ const optionStyles = [
 ];
 
 export default function PlayerPage() {
-  const { socket, isConnected } = useSocket();
+  const { 
+    socket, 
+    isConnected, 
+    isReconnecting, 
+    reconnectAttempt,
+    saveSession, 
+    getSession, 
+    clearSession,
+    getOrCreateSessionToken,
+    updateSessionScore,
+  } = useSocket();
   const [state, setState] = useState<PlayerState>('join');
   const [roomId, setRoomId] = useState('');
   const [playerName, setPlayerName] = useState('');
@@ -33,13 +43,85 @@ export default function PlayerPage() {
     score: number;
   } | null>(null);
 
+  // Check for existing player session on mount
+  useEffect(() => {
+    const session = getSession(false); // Get player-specific session
+    if (session && session.roomId && session.playerName && !session.isHost) {
+      setRoomId(session.roomId);
+      setPlayerName(session.playerName);
+      if (session.score) {
+        setScore(session.score);
+      }
+    }
+  }, [getSession]);
+
   useEffect(() => {
     if (!socket || !isConnected) return;
 
-    const handleJoined = (data: { roomId: string; playerName: string }) => {
+    const handleJoined = (data: { roomId: string; playerName: string; sessionToken?: string }) => {
       setState('waiting');
       setRoomId(data.roomId);
       setError(null);
+      
+      // Save session for reconnection
+      const token = data.sessionToken || getOrCreateSessionToken();
+      saveSession({
+        sessionToken: token,
+        roomId: data.roomId,
+        playerName: data.playerName,
+        isHost: false,
+        score: 0,
+      });
+    };
+
+    const handleRejoinSuccess = (data: { 
+      roomId: string; 
+      playerName: string; 
+      score: number;
+      gameState: string;
+      currentRound: number;
+      totalRounds: number;
+      currentQuestion: { text: string; options: string[] } | null;
+      isHost: boolean;
+      hasAnswered: boolean;
+    }) => {
+      setRoomId(data.roomId);
+      setPlayerName(data.playerName);
+      setScore(data.score);
+      setCurrentRound(data.currentRound);
+      setTotalRounds(data.totalRounds);
+      setError(null);
+      
+      // Restore state based on game state
+      if (data.gameState === 'lobby') {
+        setState('waiting');
+      } else if (data.gameState === 'playing' && data.currentQuestion) {
+        setQuestion(data.currentQuestion.text);
+        setOptions(data.currentQuestion.options);
+        if (data.hasAnswered) {
+          setState('answered');
+        } else {
+          setState('answering');
+        }
+      } else if (data.gameState === 'round-results') {
+        setState('result');
+      } else if (data.gameState === 'finished') {
+        setState('result');
+      } else {
+        setState('waiting');
+      }
+      
+      console.log('Successfully rejoined game:', data.roomId);
+    };
+
+    const handleRejoinError = (data: { message: string; shouldRejoin?: boolean; roomId?: string }) => {
+      console.log('Rejoin error:', data.message);
+      if (data.shouldRejoin === false) {
+        // Session expired or game ended, clear player session and go to join
+        clearSession(false);
+        setState('join');
+        setError(data.message);
+      }
     };
 
     const handleJoinError = (data: { message: string }) => {
@@ -80,6 +162,8 @@ export default function PlayerPage() {
       setRoundResult(data);
       setScore(data.score);
       setState('result');
+      // Update player session with new score
+      updateSessionScore(data.score, false);
     };
 
     const handleNextRound = (data: { round: number; totalRounds: number }) => {
@@ -101,14 +185,22 @@ export default function PlayerPage() {
       setRoundResult(null);
       setQuestion('');
       setOptions([]);
+      // Clear player session on game reset
+      clearSession(false);
     };
 
     const handleError = (data: { message: string }) => {
       setError(data.message || 'Der opstod en fejl');
     };
 
+    const handleHostDisconnected = () => {
+      setError('Quizmaster har mistet forbindelsen. Venter på genforbindelse...');
+    };
+
     socket.on('player:joined', handleJoined);
     socket.on('player:join-error', handleJoinError);
+    socket.on('player:rejoin-success', handleRejoinSuccess);
+    socket.on('player:rejoin-error', handleRejoinError);
     socket.on('game:started', handleGameStarted);
     socket.on('game:question', handleQuestion);
     socket.on('player:answer-submitted', handleAnswerSubmitted);
@@ -116,10 +208,13 @@ export default function PlayerPage() {
     socket.on('game:next-round', handleNextRound);
     socket.on('game:reset', handleGameReset);
     socket.on('error', handleError);
+    socket.on('host:disconnected', handleHostDisconnected);
 
     return () => {
       socket.off('player:joined', handleJoined);
       socket.off('player:join-error', handleJoinError);
+      socket.off('player:rejoin-success', handleRejoinSuccess);
+      socket.off('player:rejoin-error', handleRejoinError);
       socket.off('game:started', handleGameStarted);
       socket.off('game:question', handleQuestion);
       socket.off('player:answer-submitted', handleAnswerSubmitted);
@@ -127,8 +222,9 @@ export default function PlayerPage() {
       socket.off('game:next-round', handleNextRound);
       socket.off('game:reset', handleGameReset);
       socket.off('error', handleError);
+      socket.off('host:disconnected', handleHostDisconnected);
     };
-  }, [socket, isConnected]);
+  }, [socket, isConnected, getOrCreateSessionToken, saveSession, clearSession, updateSessionScore]);
 
   const handleJoin = () => {
     if (!socket || !roomId.trim() || !playerName.trim()) {
@@ -149,7 +245,8 @@ export default function PlayerPage() {
     }
 
     setError(null);
-    socket.emit('player:join', { roomId: trimmedRoomId, playerName: trimmedName });
+    const sessionToken = getOrCreateSessionToken();
+    socket.emit('player:join', { roomId: trimmedRoomId, playerName: trimmedName, sessionToken });
   };
 
   const handleSubmitAnswer = (answerIndex: number) => {
@@ -164,19 +261,36 @@ export default function PlayerPage() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-paper-cream paper-texture flex items-center justify-center p-4">
-        <div className="panel-kommunal p-8 text-center">
+      <div className="min-h-screen bg-paper-cream paper-texture flex items-center justify-center p-2 md:p-4">
+        <div className="panel-kommunal p-4 md:p-8 text-center">
           <div className="spinner-kommunal mx-auto mb-4"></div>
-          <p className="text-ink-faded font-bureau">Etablerer forbindelse til server...</p>
-          <p className="text-xs text-ink-light mt-2">Vent venligst</p>
+          <p className="text-ink-faded font-bureau text-sm md:text-base">
+            {isReconnecting 
+              ? `Genopretter forbindelse... (forsøg ${reconnectAttempt})` 
+              : 'Etablerer forbindelse til server...'}
+          </p>
+          {isReconnecting ? (
+            <div className="mt-3 p-3 bg-paper-aged border-2 border-brun-moerk">
+              <p className="text-xs text-ink-light">
+                🔄 Din spillersession vil blive genoprettet automatisk
+              </p>
+              {getSession()?.playerName && (
+                <p className="text-xs text-ink-faded mt-1">
+                  Spiller: <span className="font-bold">{getSession()?.playerName}</span>
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-ink-light mt-2">Vent venligst</p>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper-cream paper-texture py-6 px-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-paper-cream paper-texture py-4 px-2 md:px-4">
+      <div className="max-w-2xl mx-auto">
         {/* Join Screen */}
         {state === 'join' && (
           <>
@@ -185,9 +299,9 @@ export default function PlayerPage() {
               <div>════════════════════════════════════════</div>
             </div>
             
-            <div className="panel-kommunal p-6">
-              <div className="text-center mb-6">
-                <h1 className="font-typewriter text-xl text-brun-moerk tracking-wide mb-1">
+            <div className="panel-kommunal p-4 md:p-6">
+              <div className="text-center mb-4 md:mb-6">
+                <h1 className="font-typewriter text-lg md:text-xl text-brun-moerk tracking-wide mb-1">
                   DELTAGER-TILMELDING
                 </h1>
                 <p className="text-ink-light text-xs">Formular til quiz-deltagelse</p>
@@ -197,9 +311,9 @@ export default function PlayerPage() {
                 <span className="text-ink-faded text-xs px-2">※</span>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-bold text-ink-black mb-2">
+                  <label className="block text-xs md:text-sm font-bold text-ink-black mb-1 md:mb-2">
                     § 1. SPIL-KODE
                   </label>
                   <p className="text-xs text-ink-light mb-2">
@@ -216,7 +330,7 @@ export default function PlayerPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-ink-black mb-2">
+                  <label className="block text-xs md:text-sm font-bold text-ink-black mb-1 md:mb-2">
                     § 2. DELTAGER-NAVN
                   </label>
                   <p className="text-xs text-ink-light mb-2">
@@ -233,14 +347,14 @@ export default function PlayerPage() {
                 </div>
 
                 {error && (
-                  <div className="bg-stempel-roed/10 border-2 border-stempel-roed p-3 text-stempel-roed text-sm">
+                  <div className="bg-stempel-roed/10 border-2 border-stempel-roed p-2 md:p-3 text-stempel-roed text-xs md:text-sm">
                     <span className="font-bold">FEJL:</span> {error}
                   </div>
                 )}
 
                 <button
                   onClick={handleJoin}
-                  className="btn-kommunal btn-kommunal-primary w-full mt-4"
+                  className="btn-kommunal btn-kommunal-primary w-full mt-2 md:mt-4"
                 >
                   BEKRÆFT TILMELDING
                 </button>
@@ -260,18 +374,18 @@ export default function PlayerPage() {
               <div>════════════════════════════════════════</div>
             </div>
             
-            <div className="panel-kommunal p-6 text-center">
-              <div className="stempel stempel-godkendt text-xs mb-6 inline-block">
+            <div className="panel-kommunal p-4 md:p-6 text-center">
+              <div className="stempel stempel-godkendt text-xs mb-4 md:mb-6 inline-block">
                 REGISTRERET
               </div>
               
-              <h2 className="font-typewriter text-xl text-brun-moerk mb-2">
+              <h2 className="font-typewriter text-lg md:text-xl text-brun-moerk mb-2">
                 Velkommen, {playerName}!
               </h2>
               
-              <div className="panel-kommunal-inset p-4 my-6">
-                <div className="text-6xl mb-2 animate-pulse-subtle">📋</div>
-                <p className="text-ink-faded text-sm">
+              <div className="panel-kommunal-inset p-3 md:p-4 my-4 md:my-6">
+                <div className="text-5xl md:text-6xl mb-2 animate-pulse-subtle">📋</div>
+                <p className="text-ink-faded text-xs md:text-sm">
                   Afventer spørgsmål fra quizmaster...
                 </p>
               </div>
@@ -294,33 +408,33 @@ export default function PlayerPage() {
         {/* Answering Screen */}
         {state === 'answering' && (
           <>
-            <div className="panel-kommunal p-4 mb-4">
-              <div className="flex justify-between items-center text-xs text-ink-faded mb-2">
+            <div className="panel-kommunal p-1 md:p-2 mb-1 md:mb-2">
+              <div className="flex justify-between items-center text-xs text-ink-faded mb-1">
                 <span>RUNDE {currentRound}/{totalRounds}</span>
                 <span>SCORE: {score}</span>
               </div>
               
-              <div className="panel-kommunal-inset p-4 mb-4">
-                <p className="text-ink-black font-bold text-center">{question}</p>
+              <div className="panel-kommunal-inset p-1 md:p-2 mb-1 md:mb-2">
+                <p className="text-ink-black font-bold text-center text-xs md:text-sm leading-tight">{question.replace(/^\*\s*/, '')}</p>
               </div>
 
-              <p className="text-xs text-ink-light text-center mb-4">
+              <p className="text-xs text-ink-light text-center mb-1">
                 Vælg dit svar ved at trykke på den relevante svarmulighed:
               </p>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => handleSubmitAnswer(index)}
                     disabled={selectedAnswer !== null}
-                    className={`w-full ${optionStyles[index]} border-2 text-paper-cream font-bold py-4 px-4 flex items-center gap-4 transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`w-full ${optionStyles[index]} border-2 text-paper-cream font-bold py-2 md:py-3 px-2 md:px-4 flex items-center gap-2 md:gap-3 transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed`}
                     style={{ boxShadow: '2px 2px 0 rgba(0,0,0,0.3)' }}
                   >
-                    <span className="w-10 h-10 bg-white/20 border border-white/30 flex items-center justify-center text-xl font-black">
+                    <span className="w-7 md:w-9 h-7 md:h-9 bg-white/20 border border-white/30 flex items-center justify-center text-sm md:text-lg font-black flex-shrink-0">
                       {optionLabels[index]}
                     </span>
-                    <span className="text-left flex-1">{option}</span>
+                    <span className="text-left flex-1 text-xs md:text-sm">{option}</span>
                   </button>
                 ))}
               </div>
@@ -335,19 +449,19 @@ export default function PlayerPage() {
               <div>════════════════════════════════════════</div>
             </div>
             
-            <div className="panel-kommunal p-6 text-center">
-              <div className="stempel stempel-godkendt text-xs mb-4 inline-block">
+            <div className="panel-kommunal p-4 md:p-6 text-center">
+              <div className="stempel stempel-godkendt text-xs mb-3 md:mb-4 inline-block">
                 MODTAGET
               </div>
               
-              <div className="text-6xl mb-4">📬</div>
-              <h2 className="font-typewriter text-xl text-brun-moerk mb-2">
+              <div className="text-5xl md:text-6xl mb-3 md:mb-4">📬</div>
+              <h2 className="font-typewriter text-lg md:text-xl text-brun-moerk mb-2">
                 Svar afleveret!
               </h2>
               
-              <div className="panel-kommunal-inset p-4 my-4">
-                <p className="text-ink-light text-sm">Dit valg:</p>
-                <p className="font-bold text-xl text-brun-moerk">
+              <div className="panel-kommunal-inset p-3 md:p-4 my-3 md:my-4">
+                <p className="text-ink-light text-xs md:text-sm">Dit valg:</p>
+                <p className="font-bold text-lg md:text-xl text-brun-moerk">
                   Svarmulighed {optionLabels[selectedAnswer!]}
                 </p>
               </div>
@@ -370,48 +484,48 @@ export default function PlayerPage() {
               <div>════════════════════════════════════════</div>
             </div>
             
-            <div className="panel-kommunal p-6 text-center">
+            <div className="panel-kommunal p-4 md:p-6 text-center">
               {roundResult.isCorrect ? (
                 <>
-                  <div className="stempel stempel-godkendt text-lg mb-4 inline-block">
+                  <div className="stempel stempel-godkendt text-lg mb-3 md:mb-4 inline-block">
                     KORREKT!
                   </div>
-                  <div className="text-6xl mb-4">✓</div>
+                  <div className="text-5xl md:text-6xl mb-3 md:mb-4">✓</div>
                 </>
               ) : (
                 <>
-                  <div className="stempel stempel-afvist text-lg mb-4 inline-block">
+                  <div className="stempel stempel-afvist text-lg mb-3 md:mb-4 inline-block">
                     FORKERT
                   </div>
-                  <div className="text-6xl mb-4">✗</div>
+                  <div className="text-5xl md:text-6xl mb-3 md:mb-4">✗</div>
                 </>
               )}
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
                 {roundResult.answerIndex !== undefined && (
-                  <div className={`p-3 border-2 ${roundResult.isCorrect ? 'bg-godkendt/10 border-godkendt' : 'bg-stempel-roed/10 border-stempel-roed'}`}>
+                  <div className={`p-2 md:p-3 border-2 ${roundResult.isCorrect ? 'bg-godkendt/10 border-godkendt' : 'bg-stempel-roed/10 border-stempel-roed'}`}>
                     <p className="text-xs text-ink-light">Dit svar:</p>
-                    <p className="font-bold text-ink-black">
+                    <p className="font-bold text-ink-black text-sm md:text-base">
                       {optionLabels[roundResult.answerIndex]}: {options[roundResult.answerIndex]}
                     </p>
                   </div>
                 )}
 
-                <div className="p-3 bg-godkendt/10 border-2 border-godkendt">
+                <div className="p-2 md:p-3 bg-godkendt/10 border-2 border-godkendt">
                   <p className="text-xs text-ink-light">Korrekt svar:</p>
-                  <p className="font-bold text-godkendt">
+                  <p className="font-bold text-godkendt text-sm md:text-base">
                     {optionLabels[roundResult.correctIndex]}: {roundResult.correctAnswer}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-paper-aged border-2 border-brun-moerk p-4">
+              <div className="bg-paper-aged border-2 border-brun-moerk p-3 md:p-4">
                 <p className="text-ink-light text-xs mb-1">TOTAL SCORE</p>
-                <p className="text-4xl font-bold text-brun-moerk font-bureau">{roundResult.score.toFixed(2)}</p>
+                <p className="text-3xl md:text-4xl font-bold text-brun-moerk font-bureau">{roundResult.score.toFixed(2)}</p>
                 <p className="text-xs text-ink-light">point</p>
               </div>
 
-              <p className="text-xs text-ink-light mt-4 animate-pulse-subtle">
+              <p className="text-xs text-ink-light mt-3 md:mt-4 animate-pulse-subtle">
                 Afventer næste runde...
               </p>
             </div>

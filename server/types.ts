@@ -4,6 +4,8 @@ export interface Player {
   isActive: boolean;
   score: number;
   currentAnswer?: number; // Index of chosen option (0-3)
+  sessionToken?: string; // For reconnect/rejoin functionality
+  lastSeen?: number; // Timestamp for disconnect detection
 }
 
 export interface Question {

@@ -5,6 +5,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { useParams } from 'next/navigation';
 import PlayerList from '@/components/PlayerList';
 import WinnerScreen from '@/components/WinnerScreen';
+import { SessionData } from '@/hooks/useSocket';
 
 interface Player {
   id: string;
@@ -33,7 +34,16 @@ const optionLabels = ['A', 'B', 'C', 'D'];
 export default function HostPage() {
   const params = useParams();
   const roomId = params.roomId as string;
-  const { socket, isConnected } = useSocket();
+  const { 
+    socket, 
+    isConnected, 
+    isReconnecting,
+    reconnectAttempt,
+    saveSession, 
+    getSession, 
+    clearSession,
+    getOrCreateSessionToken,
+  } = useSocket();
 
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameState, setGameState] = useState<'lobby' | 'playing' | 'question-sent' | 'round-results' | 'finished'>('lobby');
@@ -62,6 +72,19 @@ export default function HostPage() {
     month: '2-digit',
     year: 'numeric'
   }).replace(/\//g, '-');
+
+  // Save host session on mount
+  useEffect(() => {
+    if (roomId) {
+      const sessionToken = getOrCreateSessionToken();
+      saveSession({
+        sessionToken,
+        roomId,
+        playerName: 'Host',
+        isHost: true,
+      });
+    }
+  }, [roomId, getOrCreateSessionToken, saveSession]);
 
   useEffect(() => {
     if (!socket || !isConnected || !roomId) return;
@@ -177,6 +200,47 @@ export default function HostPage() {
       console.error('Socket error:', data.message);
     };
 
+    const handlePlayerDisconnected = (data: { playerId: string; playerName: string }) => {
+      console.log(`Player ${data.playerName} disconnected - waiting for reconnection`);
+    };
+
+    const handleRejoinSuccess = (data: { 
+      roomId: string; 
+      playerName: string; 
+      score: number;
+      gameState: string;
+      currentRound: number;
+      totalRounds: number;
+      currentQuestion: { text: string; options: string[] } | null;
+      isHost: boolean;
+    }) => {
+      // Restore host state if needed
+      if (data.isHost) {
+        setCurrentRound(data.currentRound);
+        setTotalRounds(data.totalRounds);
+        
+        if (data.gameState === 'lobby') {
+          setGameState('lobby');
+        } else if (data.gameState === 'playing') {
+          setGameState('question-sent');
+          if (data.currentQuestion) {
+            setQuestionText(data.currentQuestion.text);
+            setOptions(data.currentQuestion.options);
+          }
+        } else if (data.gameState === 'round-results') {
+          setGameState('round-results');
+        } else if (data.gameState === 'finished') {
+          setGameState('finished');
+        }
+        
+        console.log('Host session restored');
+      }
+    };
+
+    const handleRejoinError = (data: { message: string }) => {
+      console.log('Rejoin error:', data.message);
+    };
+
     const handleQuizzesList = (data: { quizzes: Array<{ title: string; description: string; questionCount: number; filename: string }> }) => {
       setAvailableQuizzes(data.quizzes);
     };
@@ -199,6 +263,9 @@ export default function HostPage() {
     socket.on('game:reset', handleGameReset);
     socket.on('error', handleError);
     socket.on('host:start-game-error', handleError);
+    socket.on('player:disconnected', handlePlayerDisconnected);
+    socket.on('player:rejoin-success', handleRejoinSuccess);
+    socket.on('player:rejoin-error', handleRejoinError);
 
     return () => {
       socket.off('room:player-list', handlePlayerList);
@@ -213,6 +280,9 @@ export default function HostPage() {
       socket.off('host:start-game-error', handleError);
       socket.off('host:quizzes-list', handleQuizzesList);
       socket.off('host:quiz-selected', handleQuizSelected);
+      socket.off('player:disconnected', handlePlayerDisconnected);
+      socket.off('player:rejoin-success', handleRejoinSuccess);
+      socket.off('player:rejoin-error', handleRejoinError);
     };
   }, [socket, isConnected, roomId, selectedQuiz]);
 
@@ -281,7 +351,21 @@ export default function HostPage() {
       <div className="min-h-screen bg-paper-cream paper-texture flex items-center justify-center p-4">
         <div className="panel-kommunal p-8 text-center">
           <div className="spinner-kommunal mx-auto mb-4"></div>
-          <p className="text-ink-faded font-bureau">Etablerer forbindelse til server...</p>
+          <p className="text-ink-faded font-bureau">
+            {isReconnecting 
+              ? `Genopretter forbindelse... (forsøg ${reconnectAttempt})` 
+              : 'Etablerer forbindelse til server...'}
+          </p>
+          {isReconnecting && (
+            <div className="mt-3 p-3 bg-paper-aged border-2 border-brun-moerk">
+              <p className="text-xs text-ink-light">
+                🔄 Din quiz-session vil blive genoprettet automatisk
+              </p>
+              <p className="text-xs text-ink-faded mt-1">
+                Rum: <span className="font-bold tracking-widest">{roomId}</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );

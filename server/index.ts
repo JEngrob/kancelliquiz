@@ -7,7 +7,13 @@ import {
   addPlayerToRoom,
   removePlayerFromRoom,
   updateRoomActivity,
+  findPlayerBySessionToken,
+  updatePlayerSocketId,
+  markPlayerInactive,
+  cleanupInactivePlayers,
+  getAllRooms,
 } from './roomManager';
+import { saveRoomsToFile } from './persistence';
 import {
   evaluateAnswers,
   checkGameEnd,
@@ -149,7 +155,7 @@ io.on('connection', (socket) => {
   });
 
   // Player joins a game
-  socket.on('player:join', ({ roomId, playerName }: { roomId: string; playerName: string }) => {
+  socket.on('player:join', ({ roomId, playerName, sessionToken }: { roomId: string; playerName: string; sessionToken?: string }) => {
     if (!checkRateLimit(socket.id)) {
       socket.emit('player:join-error', { message: 'Too many requests. Please wait.' });
       return;
@@ -182,15 +188,108 @@ io.on('connection', (socket) => {
       return;
     }
 
-    addPlayerToRoom(roomId, socket.id, sanitizedName);
+    addPlayerToRoom(roomId, socket.id, sanitizedName, sessionToken);
     socket.join(roomId);
     updateRoomActivity(roomId);
 
-    socket.emit('player:joined', { roomId, playerName: sanitizedName });
+    socket.emit('player:joined', { roomId, playerName: sanitizedName, sessionToken });
     
     io.to(roomId).emit('room:player-list', {
       players: Array.from(room.gameState.players.values()),
     });
+  });
+
+  // Player rejoins after disconnect
+  socket.on('player:rejoin', ({ roomId, sessionToken, playerName, isHost }: { 
+    roomId: string; 
+    sessionToken: string; 
+    playerName: string;
+    isHost: boolean;
+  }) => {
+    if (!checkRateLimit(socket.id)) {
+      socket.emit('player:rejoin-error', { message: 'Too many requests', shouldRejoin: false });
+      return;
+    }
+
+    if (!validateRoomId(roomId)) {
+      socket.emit('player:rejoin-error', { message: 'Invalid room', shouldRejoin: false });
+      return;
+    }
+
+    const room = getRoom(roomId);
+    if (!room) {
+      socket.emit('player:rejoin-error', { message: 'Room no longer exists', shouldRejoin: false });
+      return;
+    }
+
+    // Find existing player with sessionToken
+    const existing = findPlayerBySessionToken(roomId, sessionToken);
+
+    if (existing) {
+      const { player: existingPlayer, playerId: oldPlayerId } = existing;
+      
+      // Update player with new socket.id
+      const updatedPlayer = updatePlayerSocketId(roomId, oldPlayerId, socket.id);
+      
+      if (updatedPlayer) {
+        socket.join(roomId);
+
+        // Determine current question for rejoin
+        let currentQuestion = null;
+        if (room.gameState.currentQuestion && room.gameState.state === 'playing') {
+          currentQuestion = {
+            text: room.gameState.currentQuestion.text,
+            options: room.gameState.currentQuestion.options,
+          };
+        }
+
+        // Send full game state to rejoining player
+        socket.emit('player:rejoin-success', {
+          roomId,
+          playerName: updatedPlayer.name,
+          score: updatedPlayer.score,
+          gameState: room.gameState.state,
+          currentRound: room.gameState.currentRound,
+          totalRounds: room.gameState.totalRounds,
+          currentQuestion,
+          isHost: room.gameState.hostId === socket.id,
+          hasAnswered: room.gameState.answers.has(socket.id),
+        });
+
+        // Update all clients about player list
+        io.to(roomId).emit('room:player-list', {
+          players: Array.from(room.gameState.players.values()),
+        });
+
+        // If host rejoined, send quiz info too
+        if (room.gameState.hostId === socket.id && room.gameState.currentQuestion) {
+          socket.emit('host:question-info', {
+            text: room.gameState.currentQuestion.text,
+            options: room.gameState.currentQuestion.options,
+            correctIndex: room.gameState.currentQuestion.correctIndex,
+            round: room.gameState.currentRound,
+            totalRounds: room.gameState.totalRounds,
+          });
+        }
+
+        console.log(`Player ${updatedPlayer.name} rejoined room ${roomId}`);
+        return;
+      }
+    }
+
+    // No existing session found - need to rejoin fresh if in lobby
+    if (room.gameState.state === 'lobby') {
+      socket.emit('player:rejoin-error', { 
+        message: 'Session expired. Please join again.',
+        shouldRejoin: true,
+        roomId,
+      });
+    } else {
+      socket.emit('player:rejoin-error', { 
+        message: 'Game in progress. Cannot rejoin.',
+        shouldRejoin: false 
+      });
+    }
   });
 
   // Host requests list of available quizzes
@@ -620,7 +719,7 @@ io.on('connection', (socket) => {
     });
   });
 
-  // Disconnect handling
+  // Disconnect handling - mark as inactive instead of removing immediately
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
     
@@ -628,16 +727,48 @@ io.on('connection', (socket) => {
       if (socketSet.has(socket.id)) {
         const room = getRoom(roomId);
         if (room) {
+          const player = room.gameState.players.get(socket.id);
+          
+          if (player) {
+            // Mark player as inactive instead of removing
+            markPlayerInactive(roomId, socket.id);
+            
+            // Notify others about the status change
+            io.to(roomId).emit('room:player-list', {
+              players: Array.from(room.gameState.players.values()),
+            });
+            
+            io.to(roomId).emit('player:disconnected', {
+              playerId: socket.id,
+              playerName: player.name,
+            });
+            
+            console.log(`Player ${player.name} marked as inactive in room ${roomId}`);
+            
+            // Set a timer to clean up inactive players after 5 minutes
+            setTimeout(() => {
+              const removedPlayers = cleanupInactivePlayers(roomId);
+              if (removedPlayers.length > 0) {
+                const currentRoom = getRoom(roomId);
+                if (currentRoom) {
+                  io.to(roomId).emit('room:player-list', {
+                    players: Array.from(currentRoom.gameState.players.values()),
+                  });
+                  console.log(`Cleaned up ${removedPlayers.length} inactive player(s) from room ${roomId}`);
+                }
+              }
+            }, 5 * 60 * 1000); // 5 minutes
+          }
+
           if (room.gameState.hostId === socket.id) {
             const count = socketRoomCount.get(socket.id) || 0;
             socketRoomCount.set(socket.id, Math.max(0, count - 1));
+            
+            // Notify about host disconnect
+            io.to(roomId).emit('host:disconnected', {
+              message: 'Host disconnected. Waiting for reconnection...',
+            });
           }
-          
-          removePlayerFromRoom(roomId, socket.id);
-          
-          io.to(roomId).emit('room:player-list', {
-            players: Array.from(room.gameState.players.values()),
-          });
         }
         break;
       }
@@ -645,6 +776,19 @@ io.on('connection', (socket) => {
     
     socketRoomCount.delete(socket.id);
   });
+});
+
+// Save rooms on server shutdown
+process.on('SIGINT', () => {
+  console.log('Saving game state before shutdown...');
+  saveRoomsToFile(getAllRooms());
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('Saving game state before shutdown...');
+  saveRoomsToFile(getAllRooms());
+  process.exit(0);
 });
 
 // Export httpServer, io, app, and PORT for use in combined server

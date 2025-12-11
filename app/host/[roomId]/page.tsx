@@ -69,6 +69,7 @@ export default function HostPage() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [timerActive, setTimerActive] = useState(false);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
+  const [previousScores, setPreviousScores] = useState<Map<string, number>>(new Map());
 
   const currentDate = new Date().toLocaleDateString('da-DK', {
     day: '2-digit',
@@ -170,6 +171,14 @@ export default function HostPage() {
         if (data.correctIndex !== undefined) {
           setCorrectIndex(data.correctIndex);
         }
+        
+        // Save previous scores before round starts
+        const scoresMap = new Map<string, number>();
+        players.forEach(player => {
+          scoresMap.set(player.id, player.score);
+        });
+        setPreviousScores(scoresMap);
+        
         // Start timer if questionStartTime is provided
         if (data.questionStartTime) {
           const calculateTimeRemaining = () => {
@@ -189,6 +198,13 @@ export default function HostPage() {
         // Manual question - keep state as playing
         setGameState('playing');
         setAnswerRevealed(false);
+        
+        // Save previous scores before round starts
+        const scoresMap = new Map<string, number>();
+        players.forEach(player => {
+          scoresMap.set(player.id, player.score);
+        });
+        setPreviousScores(scoresMap);
       }
     };
 
@@ -202,6 +218,13 @@ export default function HostPage() {
       setGameState('question-sent');
       setAnsweredCount(0);
       setAnswerRevealed(false); // Don't reveal until button is clicked
+      
+      // Save previous scores before round starts
+      const scoresMap = new Map<string, number>();
+      players.forEach(player => {
+        scoresMap.set(player.id, player.score);
+      });
+      setPreviousScores(scoresMap);
       
       // Start timer if questionStartTime is provided
       if (data.questionStartTime) {
@@ -236,6 +259,7 @@ export default function HostPage() {
       setTimerActive(false);
       setTimeRemaining(null);
       setQuestionStartTime(null);
+      setPreviousScores(new Map());
     };
 
     const handleError = (data: { message: string }) => {
@@ -291,6 +315,17 @@ export default function HostPage() {
       setSelectedQuiz(data.quiz.filename);
       setTotalRounds(data.totalRounds);
       setShowQuizSelection(false);
+      
+      // Auto-start quiz when selected
+      if (socket && isConnected) {
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          socket.emit('host:start-game', { 
+            roomId, 
+            quizFilename: data.quiz.filename
+          });
+        }, 100);
+      }
     };
 
     socket.on('room:player-list', handlePlayerList);
@@ -326,7 +361,7 @@ export default function HostPage() {
       socket.off('player:rejoin-success', handleRejoinSuccess);
       socket.off('player:rejoin-error', handleRejoinError);
     };
-  }, [socket, isConnected, roomId, selectedQuiz]);
+  }, [socket, isConnected, roomId, selectedQuiz, players]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -753,7 +788,18 @@ export default function HostPage() {
                   <span className="font-bold text-ink-black text-sm">SVARPROTOKOL</span>
                 </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {answerResults.map((result) => (
+                  {[...answerResults].sort((a, b) => {
+                    // Calculate points for current round
+                    const aPreviousScore = previousScores.get(a.playerId) || 0;
+                    const bPreviousScore = previousScores.get(b.playerId) || 0;
+                    const aRoundPoints = a.score - aPreviousScore;
+                    const bRoundPoints = b.score - bPreviousScore;
+                    // Sort by round points (descending), then by total score if equal
+                    if (bRoundPoints !== aRoundPoints) {
+                      return bRoundPoints - aRoundPoints;
+                    }
+                    return b.score - a.score;
+                  }).map((result) => (
                     <div
                       key={result.playerId}
                       className={`flex justify-between items-center p-2 border-2 text-xs ${

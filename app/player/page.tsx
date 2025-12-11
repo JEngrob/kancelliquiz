@@ -287,24 +287,24 @@ export default function PlayerPage() {
       <div className="min-h-screen bg-paper-cream paper-texture flex items-center justify-center p-2 md:p-4">
         <div className="panel-kommunal p-4 md:p-8 text-center">
           <div className="spinner-kommunal mx-auto mb-4"></div>
-          <p className="text-ink-faded font-bureau text-sm md:text-base">
+          <p className="text-ink-faded font-bureau text-base md:text-lg">
             {isReconnecting 
               ? `Genopretter forbindelse... (forsøg ${reconnectAttempt})` 
               : 'Etablerer forbindelse til server...'}
           </p>
           {isReconnecting ? (
             <div className="mt-3 p-3 bg-paper-aged border-2 border-brun-moerk">
-              <p className="text-xs text-ink-light">
+              <p className="text-sm text-ink-light">
                 🔄 Din spillersession vil blive genoprettet automatisk
               </p>
               {getSession()?.playerName && (
-                <p className="text-xs text-ink-faded mt-1">
+                <p className="text-sm text-ink-faded mt-1">
                   Spiller: <span className="font-bold">{getSession()?.playerName}</span>
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-xs text-ink-light mt-2">Vent venligst</p>
+            <p className="text-sm text-ink-light mt-2">Vent venligst</p>
           )}
         </div>
       </div>
@@ -318,28 +318,28 @@ export default function PlayerPage() {
         {state === 'join' && (
           <>
             {/* Header */}
-            <div className="text-center text-brun-moerk font-bureau text-xs mb-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mb-0">
               <div>════════════════════════════════════════</div>
             </div>
             
             <div className="panel-kommunal p-4 md:p-6">
               <div className="text-center mb-4 md:mb-6">
-                <h1 className="font-typewriter text-lg md:text-xl text-brun-moerk tracking-wide mb-1">
+                <h1 className="font-typewriter text-xl md:text-2xl text-brun-moerk tracking-wide mb-1">
                   DELTAGER-TILMELDING
                 </h1>
-                <p className="text-ink-light text-xs">Formular til quiz-deltagelse</p>
+                <p className="text-ink-light text-sm">Formular til quiz-deltagelse</p>
               </div>
 
               <div className="sektion-divider">
-                <span className="text-ink-faded text-xs px-2">※</span>
+                <span className="text-ink-faded text-sm px-2">※</span>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs md:text-sm font-bold text-ink-black mb-1 md:mb-2">
+                  <label className="block text-sm md:text-base font-bold text-ink-black mb-1 md:mb-2">
                     § 1. SPIL-KODE
                   </label>
-                  <p className="text-xs text-ink-light mb-2">
+                  <p className="text-sm text-ink-light mb-2">
                     Indtast den 6-cifrede kode oplyst af quizmaster:
                   </p>
                   <input
@@ -353,10 +353,10 @@ export default function PlayerPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs md:text-sm font-bold text-ink-black mb-1 md:mb-2">
+                  <label className="block text-sm md:text-base font-bold text-ink-black mb-1 md:mb-2">
                     § 2. DELTAGER-NAVN
                   </label>
-                  <p className="text-xs text-ink-light mb-2">
+                  <p className="text-sm text-ink-light mb-2">
                     Angiv dit fulde navn eller ønskede kaldenavn:
                   </p>
                   <input
@@ -370,7 +370,7 @@ export default function PlayerPage() {
                 </div>
 
                 {error && (
-                  <div className="bg-stempel-roed/10 border-2 border-stempel-roed p-2 md:p-3 text-stempel-roed text-xs md:text-sm">
+                  <div className="bg-stempel-roed/10 border-2 border-stempel-roed p-2 md:p-3 text-stempel-roed text-sm md:text-base">
                     <span className="font-bold">FEJL:</span> {error}
                   </div>
                 )}
@@ -384,7 +384,7 @@ export default function PlayerPage() {
               </div>
             </div>
 
-            <div className="text-center text-brun-moerk font-bureau text-xs mt-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mt-0">
               <div>════════════════════════════════════════</div>
             </div>
           </>
@@ -393,36 +393,36 @@ export default function PlayerPage() {
         {/* Waiting Screen */}
         {state === 'waiting' && (
           <>
-            <div className="text-center text-brun-moerk font-bureau text-xs mb-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mb-0">
               <div>════════════════════════════════════════</div>
             </div>
             
             <div className="panel-kommunal p-4 md:p-6 text-center">
-              <div className="stempel stempel-godkendt text-xs mb-4 md:mb-6 inline-block">
+              <div className="stempel stempel-godkendt text-sm mb-4 md:mb-6 inline-block">
                 REGISTRERET
               </div>
               
-              <h2 className="font-typewriter text-lg md:text-xl text-brun-moerk mb-2">
+              <h2 className="font-typewriter text-xl md:text-2xl text-brun-moerk mb-2">
                 Velkommen, {playerName}!
               </h2>
               
               <div className="panel-kommunal-inset p-3 md:p-4 my-4 md:my-6">
                 <div className="text-5xl md:text-6xl mb-2 animate-pulse-subtle">📋</div>
-                <p className="text-ink-faded text-xs md:text-sm">
+                <p className="text-ink-faded text-sm md:text-base">
                   Afventer spørgsmål fra quizmaster...
                 </p>
               </div>
 
               {score > 0 && (
                 <div className="bg-paper-aged border-2 border-brun-moerk p-4">
-                  <p className="text-ink-light text-xs mb-1">AKKUMULERET SCORE</p>
+                  <p className="text-ink-light text-sm mb-1">AKKUMULERET SCORE</p>
                   <p className="text-4xl font-bold text-brun-moerk font-bureau">{score.toFixed(2)}</p>
-                  <p className="text-xs text-ink-light">point</p>
+                  <p className="text-sm text-ink-light">point</p>
                 </div>
               )}
             </div>
 
-            <div className="text-center text-brun-moerk font-bureau text-xs mt-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mt-0">
               <div>════════════════════════════════════════</div>
             </div>
           </>
@@ -432,33 +432,14 @@ export default function PlayerPage() {
         {state === 'answering' && (
           <>
             <div className="panel-kommunal p-1 md:p-2 mb-1 md:mb-2">
-              <div className="flex justify-between items-center text-xs text-ink-faded mb-1">
+              <div className="flex justify-between items-center text-sm text-ink-faded mb-1">
                 <span>RUNDE {currentRound}/{totalRounds}</span>
                 <span>SCORE: {score}</span>
               </div>
               
-              {/* Timer */}
-              {timeRemaining !== null && (
-                <div className="mb-2 text-center">
-                  <div className={`inline-block px-3 py-1 border-2 font-bold text-sm md:text-base ${
-                    timeRemaining <= 5 
-                      ? 'bg-stempel-roed/20 border-stempel-roed text-stempel-roed' 
-                      : timeRemaining <= 10
-                      ? 'bg-[#c9a86b]/20 border-[#6b5a2a] text-[#6b5a2a]'
-                      : 'bg-paper-aged border-brun-moerk text-brun-moerk'
-                  }`}>
-                    ⏱️ {timeRemaining} sek
-                  </div>
-                </div>
-              )}
-              
               <div className="panel-kommunal-inset p-1 md:p-2 mb-1 md:mb-2">
-                <p className="text-ink-black font-bold text-center text-xs md:text-sm leading-tight">{question.replace(/^\*\s*/, '')}</p>
+                <p className="text-ink-black font-bold text-center text-sm md:text-base leading-tight">{question.replace(/^\*\s*/, '')}</p>
               </div>
-
-              <p className="text-xs text-ink-light text-center mb-1">
-                Vælg dit svar ved at trykke på den relevante svarmulighed:
-              </p>
 
               <div className="space-y-2">
                 {options.map((option, index) => (
@@ -469,10 +450,10 @@ export default function PlayerPage() {
                     className={`w-full ${optionStyles[index]} border-2 text-paper-cream font-bold py-2 md:py-3 px-2 md:px-4 flex items-center gap-2 md:gap-3 transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed`}
                     style={{ boxShadow: '2px 2px 0 rgba(0,0,0,0.3)' }}
                   >
-                    <span className="w-7 md:w-9 h-7 md:h-9 bg-white/20 border border-white/30 flex items-center justify-center text-sm md:text-lg font-black flex-shrink-0">
+                    <span className="w-7 md:w-9 h-7 md:h-9 bg-white/20 border border-white/30 flex items-center justify-center text-base md:text-xl font-black flex-shrink-0">
                       {optionLabels[index]}
                     </span>
-                    <span className="text-left flex-1 text-xs md:text-sm">{option}</span>
+                    <span className="text-left flex-1 text-sm md:text-base">{option}</span>
                   </button>
                 ))}
               </div>
@@ -483,33 +464,33 @@ export default function PlayerPage() {
         {/* Answered - Waiting for reveal */}
         {state === 'answered' && (
           <>
-            <div className="text-center text-brun-moerk font-bureau text-xs mb-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mb-0">
               <div>════════════════════════════════════════</div>
             </div>
             
             <div className="panel-kommunal p-4 md:p-6 text-center">
-              <div className="stempel stempel-godkendt text-xs mb-3 md:mb-4 inline-block">
+              <div className="stempel stempel-godkendt text-sm mb-3 md:mb-4 inline-block">
                 MODTAGET
               </div>
               
               <div className="text-5xl md:text-6xl mb-3 md:mb-4">📬</div>
-              <h2 className="font-typewriter text-lg md:text-xl text-brun-moerk mb-2">
+              <h2 className="font-typewriter text-xl md:text-2xl text-brun-moerk mb-2">
                 Svar afleveret!
               </h2>
               
               <div className="panel-kommunal-inset p-3 md:p-4 my-3 md:my-4">
-                <p className="text-ink-light text-xs md:text-sm">Dit valg:</p>
-                <p className="font-bold text-lg md:text-xl text-brun-moerk">
+                <p className="text-ink-light text-sm md:text-base">Dit valg:</p>
+                <p className="font-bold text-xl md:text-2xl text-brun-moerk">
                   Svarmulighed {optionLabels[selectedAnswer!]}
                 </p>
               </div>
               
-              <p className="text-ink-light text-xs animate-pulse-subtle">
+              <p className="text-ink-light text-sm animate-pulse-subtle">
                 Afventer at quizmaster afslører det korrekte svar...
               </p>
             </div>
 
-            <div className="text-center text-brun-moerk font-bureau text-xs mt-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mt-0">
               <div>════════════════════════════════════════</div>
             </div>
           </>
@@ -518,21 +499,21 @@ export default function PlayerPage() {
         {/* Result Screen */}
         {state === 'result' && roundResult && (
           <>
-            <div className="text-center text-brun-moerk font-bureau text-xs mb-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mb-0">
               <div>════════════════════════════════════════</div>
             </div>
             
             <div className="panel-kommunal p-4 md:p-6 text-center">
               {roundResult.isCorrect ? (
                 <>
-                  <div className="stempel stempel-godkendt text-lg mb-3 md:mb-4 inline-block">
+                  <div className="stempel stempel-godkendt text-xl mb-3 md:mb-4 inline-block">
                     KORREKT!
                   </div>
                   <div className="text-5xl md:text-6xl mb-3 md:mb-4">✓</div>
                 </>
               ) : (
                 <>
-                  <div className="stempel stempel-afvist text-lg mb-3 md:mb-4 inline-block">
+                  <div className="stempel stempel-afvist text-xl mb-3 md:mb-4 inline-block">
                     FORKERT
                   </div>
                   <div className="text-5xl md:text-6xl mb-3 md:mb-4">✗</div>
@@ -542,33 +523,33 @@ export default function PlayerPage() {
               <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
                 {roundResult.answerIndex !== undefined && (
                   <div className={`p-2 md:p-3 border-2 ${roundResult.isCorrect ? 'bg-godkendt/10 border-godkendt' : 'bg-stempel-roed/10 border-stempel-roed'}`}>
-                    <p className="text-xs text-ink-light">Dit svar:</p>
-                    <p className="font-bold text-ink-black text-sm md:text-base">
+                    <p className="text-sm text-ink-light">Dit svar:</p>
+                    <p className="font-bold text-ink-black text-base md:text-lg">
                       {optionLabels[roundResult.answerIndex]}: {options[roundResult.answerIndex]}
                     </p>
                   </div>
                 )}
 
                 <div className="p-2 md:p-3 bg-godkendt/10 border-2 border-godkendt">
-                  <p className="text-xs text-ink-light">Korrekt svar:</p>
-                  <p className="font-bold text-godkendt text-sm md:text-base">
+                  <p className="text-sm text-ink-light">Korrekt svar:</p>
+                  <p className="font-bold text-godkendt text-base md:text-lg">
                     {optionLabels[roundResult.correctIndex]}: {roundResult.correctAnswer}
                   </p>
                 </div>
               </div>
 
               <div className="bg-paper-aged border-2 border-brun-moerk p-3 md:p-4">
-                <p className="text-ink-light text-xs mb-1">TOTAL SCORE</p>
+                <p className="text-ink-light text-sm mb-1">TOTAL SCORE</p>
                 <p className="text-3xl md:text-4xl font-bold text-brun-moerk font-bureau">{roundResult.score.toFixed(2)}</p>
-                <p className="text-xs text-ink-light">point</p>
+                <p className="text-sm text-ink-light">point</p>
               </div>
 
-              <p className="text-xs text-ink-light mt-3 md:mt-4 animate-pulse-subtle">
+              <p className="text-sm text-ink-light mt-3 md:mt-4 animate-pulse-subtle">
                 Afventer næste runde...
               </p>
             </div>
 
-            <div className="text-center text-brun-moerk font-bureau text-xs mt-0">
+            <div className="text-center text-brun-moerk font-bureau text-sm mt-0">
               <div>════════════════════════════════════════</div>
             </div>
           </>

@@ -1,6 +1,17 @@
 # Start Server
 
-## Hurtig start
+## Hurtig start (Anbefalet)
+
+Start den kombinerede server (frontend + backend på samme port):
+```bash
+npm start
+```
+
+Åbn browseren på `http://localhost:3000`
+
+## Alternativ: Separate servere
+
+Hvis du foretrækker at køre servere separat:
 
 1. **Start Socket.IO Backend Server** (port 3001):
 ```bash
@@ -16,7 +27,5 @@ Terminal navn: **Next.js Frontend (3000)**
 
 3. Åbn browseren på `http://localhost:3000`
 
-## Bemærk
-
-Begge servere skal køre samtidigt for at spillet fungerer.
+**Bemærk:** Begge servere skal køre samtidigt for at spillet fungerer, hvis du bruger separate servere.
 

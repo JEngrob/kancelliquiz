@@ -2,7 +2,7 @@
 
 **Titel:** Kancellisprog og Randers Kommune  
 **Beskrivelse:** En quiz om kancellisprog og Randers Kommune-specifikke spørgsmål  
-**Antal spørgsmål:** 16
+**Antal spørgsmål:** 15
 
 
 
@@ -167,31 +167,6 @@
 
 ---
 
-## Maden
-
-**Tekst:** Tilførslen af kulinariske elementer forventes at indtræffe inden for en tidshorisont, der muliggør opretholdelse af metabolistisk ligevægtspunkt.
-
-**A)** Vi skal huske at dyrke motion efter maden.  
-**B)** Køkkenet er desværre brændt ned.  
-**C)** Der kommer mad lige om lidt.  
-**D)** Vi skal spare på maden i år.
-
-**Korrekt svar:** C
-
----
-
-## Evalueringen
-
-**Tekst:** Vi anerkender problemstillingen og vil fremadrettet fokusere på læringspunkterne for at sikre en mere robust proces.
-
-**A)** Vi er super gode til vores arbejde.  
-**B)** Ups, vi dummede os. Det må vi (måske) lade være med igen.  
-**C)** Vi skal alle sammen på kursus i robusthed.  
-**D)** Vi har brug for flere computere.
-
-**Korrekt svar:** B
-
----
 
 ## GDPR
 
@@ -204,17 +179,29 @@
 
 **Korrekt svar:** A
 
+---
+
+## Maden
+
+**Tekst:** Tilførsel af fødevarebaserede serviceydelser til arrangementets deltagere vil, under forudsætning af uændrede bevillingsmæssige og hygiejnemæssige rammer, blive effektueret via Randers Kommunes forplejningsenhed inden for et tidsrum, der sikrer opretholdelse af deltagernes ernæringsmæssige og metaboliske funktionsniveau.
+
+**A)** Vi skal huske at dyrke motion efter maden.  
+**B)** Køkkenet er desværre brændt ned.  
+**C)** Der kommer mad lige om lidt.  
+**D)** Vi skal spare på maden i år.
+
+**Korrekt svar:** C
 
 
 ---
 
 ## Dansegulvet
 
-**Tekst:** Det opfordres hermed til, at personalet udviser motorisk kreativitet på det dertil indrettede areal i takt til de auditive inputs.
+**Tekst:** I henhold til strategien for øget social kohæsion indstilles det, at personalet iværksætter non-verbal, motorisk aktivitet på det dertil allokerede gulvareal, i umiddelbar synkronisering med de tilstedeværende akustiske svingninger.
 
 **A)** Vi skal rydde op i kopirummet.  
-**B)** Kom ud på dansegulvet og dans!  
-**C)** Vi skal sidde stille og lytte til talen.  
-**D)** Vi skal lave gruppeøvelser med LEGO.
+**B)** Vi skal sidde stille og lytte til talen.  
+**C)** Vi skal lave gruppeøvelser med LEGO.
+**D)** Kom ud på dansegulvet og dans!  
 
-**Korrekt svar:** B
+**Korrekt svar:** D

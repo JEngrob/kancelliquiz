@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "powershell -Command \"$Host.UI.RawUI.WindowTitle = 'Next.js Frontend (3000)'; Write-Host '🚀 Starter Next.js Frontend Server...' -ForegroundColor Cyan; & npx next dev\"",
     "build": "next build",
-    "start": "next start",
+    "start": "tsx server.ts",
     "start:combined": "tsx server.ts",
     "start:production": "tsx server.ts",
     "lint": "next lint",

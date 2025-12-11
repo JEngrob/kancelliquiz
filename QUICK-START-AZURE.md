@@ -109,3 +109,6 @@ Efter deployment:
 - Troubleshooting: Se troubleshooting sektion i AZURE-DEPLOYMENT.md
 - Azure dokumentation: https://docs.microsoft.com/azure/app-service/
 
+
+
+

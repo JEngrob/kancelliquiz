@@ -58,3 +58,6 @@ Efter secrets er sat op:
 3. Se workflow køre automatisk
 4. Verificer at deployment er successful
 
+
+
+

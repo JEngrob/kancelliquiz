@@ -14,21 +14,22 @@
     "start:production": "tsx server.ts",
     "lint": "next lint",
     "server": "powershell -Command \"$Host.UI.RawUI.WindowTitle = 'Socket.IO Backend (3001)'; Write-Host '🎮 Starter Socket.IO Backend Server...' -ForegroundColor Magenta; & npx tsx watch server/index.ts\"",
+    "test:players": "tsx scripts/test-players-auto.ts",
     "postinstall": "echo 'Dependencies installed'"
   },
   "dependencies": {
+    "autoprefixer": "^10.4.20",
     "express": "^4.19.2",
     "next": "^14.2.5",
+    "postcss": "^8.4.40",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-qr-code": "^2.0.18",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
+    "tailwindcss": "^3.4.7",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.4",
-    "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.40",
-    "tailwindcss": "^3.4.7"
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

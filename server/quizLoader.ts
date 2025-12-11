@@ -66,7 +66,12 @@ function parseQuizMarkdown(content: string, filename: string): Quiz {
       };
     } else if (line.startsWith('**Tekst:**')) {
       if (currentQuestion) {
-        currentQuestion.text = line.substring(9).trim();
+        let text = line.substring(9).trim();
+        // Remove leading asterisk if present
+        if (text.startsWith('* ')) {
+          text = text.substring(2).trim();
+        }
+        currentQuestion.text = text;
       }
     } else if (line.match(/^\*\*[A-D]\)\*\*/)) {
       // Answer option - format: **A)** Option text

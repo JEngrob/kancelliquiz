@@ -84,7 +84,7 @@ body {
 .stempel {
   position: relative;
   display: inline-block;
-  padding: 8px 16px;
+  padding: 4px 12px;
   border: 3px solid var(--stempel-roed);
   border-radius: 4px;
   color: var(--stempel-roed);
@@ -92,6 +92,14 @@ body {
   text-transform: uppercase;
   transform: rotate(-3deg);
   opacity: 0.85;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .stempel {
+    padding: 8px 16px;
+    font-size: 1rem;
+  }
 }
 
 .stempel-godkendt {
@@ -116,12 +124,18 @@ body {
   color: var(--ink-black);
   font-family: 'IBM Plex Mono', monospace;
   font-weight: 600;
-  padding: 12px 24px;
+  padding: 8px 16px;
   cursor: pointer;
   box-shadow: 
     2px 2px 0 var(--brun-moerk),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transition: all 0.1s ease;
+}
+
+@media (min-width: 768px) {
+  .btn-kommunal {
+    padding: 12px 24px;
+  }
 }
 
 .btn-kommunal:hover {
@@ -160,8 +174,14 @@ body {
   border: 2px solid var(--brun-moerk);
   color: var(--ink-black);
   font-family: 'IBM Plex Mono', monospace;
-  padding: 12px 16px;
+  padding: 8px 12px;
   box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .input-kommunal {
+    padding: 12px 16px;
+  }
 }
 
 .input-kommunal:focus {
@@ -184,12 +204,17 @@ body {
   box-shadow: 
     4px 4px 0 var(--brun-dyb),
     inset 0 0 20px rgba(0, 0, 0, 0.03);
+  /* Optimize for mobile text wrapping */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .panel-kommunal-inset {
   background: var(--paper-aged);
   border: 2px solid var(--brun-moerk);
   box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.1);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Document header with ASCII borders */
@@ -197,16 +222,29 @@ body {
   border-top: 4px double var(--brun-moerk);
   border-bottom: 4px double var(--brun-moerk);
   background: linear-gradient(180deg, var(--paper-aged) 0%, var(--paper-cream) 100%);
-  padding: 20px;
+  padding: 10px;
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .dokument-header {
+    padding: 20px;
+  }
 }
 
 /* Section divider */
 .sektion-divider {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin: 24px 0;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+@media (min-width: 768px) {
+  .sektion-divider {
+    gap: 16px;
+    margin: 24px 0;
+  }
 }
 
 .sektion-divider::before,

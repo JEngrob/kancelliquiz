@@ -300,3 +300,6 @@ Efter første setup:
 - Socket.IO og Next.js kører på samme port via combined server (`server.ts`)
 - Environment variables skal være sat korrekt for at appen virker
 
+
+
+

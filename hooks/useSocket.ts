@@ -3,21 +3,24 @@ import { io, Socket } from 'socket.io-client';
 
 /**
  * Determine Socket.IO URL
- * In production/Azure, Socket.IO runs on the same port as Next.js
- * In development, it runs on a separate port
+ * In production/Azure and combined server mode, Socket.IO runs on the same port as Next.js
+ * In development with separate servers, it runs on a separate port (3001)
  */
 const getSocketUrl = () => {
-  // If explicitly set, use that
+  // In browser, ALWAYS use current origin (same port as frontend)
+  // This works for combined server mode where Socket.IO runs on same port as Next.js
+  if (typeof window !== 'undefined') {
+    // Always use current origin - this ensures Socket.IO connects to same port as frontend
+    // This is correct for combined server (server.ts) where both run on same port
+    return window.location.origin;
+  }
+  
+  // Server-side: use env var if set, otherwise fallback
   if (process.env.NEXT_PUBLIC_SOCKET_URL) {
     return process.env.NEXT_PUBLIC_SOCKET_URL;
   }
   
-  // In browser, use current origin (same port as frontend)
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-  
-  // Development fallback
+  // Development fallback (for separate server setup)
   return 'http://localhost:3001';
 };
 

@@ -42,6 +42,8 @@ export default function PlayerPage() {
     isCorrect: boolean;
     score: number;
   } | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [timerActive, setTimerActive] = useState(false);
 
   // Check for existing player session on mount
   useEffect(() => {
@@ -137,7 +139,7 @@ export default function PlayerPage() {
       setError(null);
     };
 
-    const handleQuestion = (data: { text: string; options: string[]; round: number; totalRounds: number }) => {
+    const handleQuestion = (data: { text: string; options: string[]; round: number; totalRounds: number; questionStartTime?: number }) => {
       setState('answering');
       setQuestion(data.text);
       setOptions(data.options);
@@ -145,11 +147,27 @@ export default function PlayerPage() {
       setTotalRounds(data.totalRounds);
       setSelectedAnswer(null);
       setRoundResult(null);
+      
+      // Start timer if questionStartTime is provided
+      if (data.questionStartTime) {
+        const calculateTimeRemaining = () => {
+          const elapsed = (Date.now() - data.questionStartTime!) / 1000;
+          return Math.max(0, 30 - elapsed);
+        };
+        const remaining = calculateTimeRemaining();
+        setTimeRemaining(Math.ceil(remaining));
+        setTimerActive(remaining > 0);
+      } else {
+        // Fallback: start from 30 seconds if no server time provided
+        setTimeRemaining(30);
+        setTimerActive(true);
+      }
     };
 
     const handleAnswerSubmitted = (data: { answerIndex: number }) => {
       setState('answered');
       setSelectedAnswer(data.answerIndex);
+      setTimerActive(false); // Stop timer when answer is submitted
     };
 
     const handleRoundResult = (data: {
@@ -175,6 +193,8 @@ export default function PlayerPage() {
       setQuestion('');
       setOptions([]);
       setError(null);
+      setTimeRemaining(null);
+      setTimerActive(false);
     };
 
     const handleGameReset = () => {
@@ -185,6 +205,8 @@ export default function PlayerPage() {
       setRoundResult(null);
       setQuestion('');
       setOptions([]);
+      setTimeRemaining(null);
+      setTimerActive(false);
       // Clear player session on game reset
       clearSession(false);
     };
@@ -250,12 +272,13 @@ export default function PlayerPage() {
   };
 
   const handleSubmitAnswer = (answerIndex: number) => {
-    if (!socket || selectedAnswer !== null) {
+    if (!socket || selectedAnswer !== null || (timeRemaining !== null && timeRemaining <= 0)) {
       return;
     }
 
     setSelectedAnswer(answerIndex);
     setError(null);
+    setTimerActive(false);
     socket.emit('player:submit-answer', { roomId, answerIndex });
   };
 
@@ -414,6 +437,21 @@ export default function PlayerPage() {
                 <span>SCORE: {score}</span>
               </div>
               
+              {/* Timer */}
+              {timeRemaining !== null && (
+                <div className="mb-2 text-center">
+                  <div className={`inline-block px-3 py-1 border-2 font-bold text-sm md:text-base ${
+                    timeRemaining <= 5 
+                      ? 'bg-stempel-roed/20 border-stempel-roed text-stempel-roed' 
+                      : timeRemaining <= 10
+                      ? 'bg-[#c9a86b]/20 border-[#6b5a2a] text-[#6b5a2a]'
+                      : 'bg-paper-aged border-brun-moerk text-brun-moerk'
+                  }`}>
+                    ⏱️ {timeRemaining} sek
+                  </div>
+                </div>
+              )}
+              
               <div className="panel-kommunal-inset p-1 md:p-2 mb-1 md:mb-2">
                 <p className="text-ink-black font-bold text-center text-xs md:text-sm leading-tight">{question.replace(/^\*\s*/, '')}</p>
               </div>
@@ -427,7 +465,7 @@ export default function PlayerPage() {
                   <button
                     key={index}
                     onClick={() => handleSubmitAnswer(index)}
-                    disabled={selectedAnswer !== null}
+                    disabled={selectedAnswer !== null || (timeRemaining !== null && timeRemaining <= 0)}
                     className={`w-full ${optionStyles[index]} border-2 text-paper-cream font-bold py-2 md:py-3 px-2 md:px-4 flex items-center gap-2 md:gap-3 transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed`}
                     style={{ boxShadow: '2px 2px 0 rgba(0,0,0,0.3)' }}
                   >

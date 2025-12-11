@@ -66,6 +66,9 @@ export default function HostPage() {
   const [answerRevealed, setAnswerRevealed] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [resetKeepPlayers, setResetKeepPlayers] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [timerActive, setTimerActive] = useState(false);
+  const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
 
   const currentDate = new Date().toLocaleDateString('da-DK', {
     day: '2-digit',
@@ -125,6 +128,8 @@ export default function HostPage() {
       setAnswerResults(data.answerResults);
       setCorrectAnswer(data.correctAnswer);
       setPlayers(data.players);
+      setTimerActive(false);
+      setTimeRemaining(null);
       if (data.gameEnded) {
         setWinners(data.winners);
       }
@@ -136,6 +141,9 @@ export default function HostPage() {
       setAnswerResults([]);
       setAnsweredCount(0);
       setAnswerRevealed(false);
+      setTimerActive(false);
+      setTimeRemaining(null);
+      setQuestionStartTime(null);
       // If using a quiz, question will be sent automatically
       if (!selectedQuiz) {
         setGameState('playing');
@@ -148,7 +156,7 @@ export default function HostPage() {
       }
     };
 
-    const handleQuestion = (data: { text: string; options: string[]; round: number; totalRounds: number; correctIndex?: number }) => {
+    const handleQuestion = (data: { text: string; options: string[]; round: number; totalRounds: number; correctIndex?: number; questionStartTime?: number }) => {
       // When a quiz question arrives, show it as sent
       if (selectedQuiz) {
         setGameState('question-sent');
@@ -162,6 +170,21 @@ export default function HostPage() {
         if (data.correctIndex !== undefined) {
           setCorrectIndex(data.correctIndex);
         }
+        // Start timer if questionStartTime is provided
+        if (data.questionStartTime) {
+          const calculateTimeRemaining = () => {
+            const elapsed = (Date.now() - data.questionStartTime!) / 1000;
+            return Math.max(0, 30 - elapsed);
+          };
+          const remaining = calculateTimeRemaining();
+          setTimeRemaining(Math.ceil(remaining));
+          setTimerActive(remaining > 0);
+          setQuestionStartTime(data.questionStartTime);
+        } else {
+          setTimeRemaining(30);
+          setTimerActive(true);
+          setQuestionStartTime(Date.now());
+        }
       } else {
         // Manual question - keep state as playing
         setGameState('playing');
@@ -169,7 +192,7 @@ export default function HostPage() {
       }
     };
 
-    const handleQuestionInfo = (data: { text: string; options: string[]; correctIndex: number; round: number; totalRounds: number }) => {
+    const handleQuestionInfo = (data: { text: string; options: string[]; correctIndex: number; round: number; totalRounds: number; questionStartTime?: number }) => {
       // Host-specific question info with correct answer (for quiz questions)
       setQuestionText(data.text);
       setOptions(data.options);
@@ -179,6 +202,22 @@ export default function HostPage() {
       setGameState('question-sent');
       setAnsweredCount(0);
       setAnswerRevealed(false); // Don't reveal until button is clicked
+      
+      // Start timer if questionStartTime is provided
+      if (data.questionStartTime) {
+        const calculateTimeRemaining = () => {
+          const elapsed = (Date.now() - data.questionStartTime!) / 1000;
+          return Math.max(0, 30 - elapsed);
+        };
+        const remaining = calculateTimeRemaining();
+        setTimeRemaining(Math.ceil(remaining));
+        setTimerActive(remaining > 0);
+        setQuestionStartTime(data.questionStartTime);
+      } else {
+        setTimeRemaining(30);
+        setTimerActive(true);
+        setQuestionStartTime(Date.now());
+      }
     };
 
     const handleGameReset = (data: { players: Player[] }) => {
@@ -194,6 +233,9 @@ export default function HostPage() {
       setAnswerRevealed(false);
       setShowQuizSelection(true);
       setSelectedQuiz(null);
+      setTimerActive(false);
+      setTimeRemaining(null);
+      setQuestionStartTime(null);
     };
 
     const handleError = (data: { message: string }) => {
@@ -286,6 +328,28 @@ export default function HostPage() {
     };
   }, [socket, isConnected, roomId, selectedQuiz]);
 
+  // Timer countdown effect
+  useEffect(() => {
+    if (!timerActive || timeRemaining === null || questionStartTime === null) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // Recalculate time remaining based on server time to stay synchronized
+      const elapsed = (Date.now() - questionStartTime) / 1000;
+      const remaining = Math.max(0, 30 - elapsed);
+      
+      if (remaining <= 0) {
+        setTimerActive(false);
+        setTimeRemaining(0);
+      } else {
+        setTimeRemaining(Math.ceil(remaining));
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerActive, timeRemaining, questionStartTime]);
+
   const handleSelectQuiz = (quizFilename: string) => {
     if (socket && isConnected) {
       socket.emit('host:select-quiz', { roomId, quizFilename });
@@ -315,9 +379,19 @@ export default function HostPage() {
           correctIndex: correctIndex,
         },
       });
+      
+      // Start timer when manually sending question
+      setTimeRemaining(30);
+      setTimerActive(true);
+      setQuestionStartTime(Date.now());
       setGameState('question-sent');
       setAnsweredCount(0);
       setAnswerRevealed(false);
+      
+      // Start timer when manually sending question
+      setTimeRemaining(30);
+      setTimerActive(true);
+      setQuestionStartTime(Date.now());
     };
 
   const handleRevealAnswer = () => {
@@ -563,6 +637,21 @@ export default function HostPage() {
                   <span className="text-brun-moerk font-bold text-sm">RUNDE {currentRound}/{totalRounds}</span>
                   <div className="stempel text-xs">AFVENTER SVAR</div>
                 </div>
+                
+                {/* Timer */}
+                {timeRemaining !== null && (
+                  <div className="mb-2 text-center">
+                    <div className={`inline-block px-3 py-1 border-2 font-bold text-sm md:text-base ${
+                      timeRemaining <= 5 
+                        ? 'bg-stempel-roed/20 border-stempel-roed text-stempel-roed' 
+                        : timeRemaining <= 10
+                        ? 'bg-[#c9a86b]/20 border-[#6b5a2a] text-[#6b5a2a]'
+                        : 'bg-paper-aged border-brun-moerk text-brun-moerk'
+                    }`}>
+                      ⏱️ {timeRemaining} sek
+                    </div>
+                  </div>
+                )}
 
                 <div className="panel-kommunal-inset p-2 mb-2">
                   <p className="text-xs text-ink-light mb-1">Spørgsmål:</p>

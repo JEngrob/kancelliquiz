@@ -1,6 +1,6 @@
 import { GameState, Player, Question } from './types';
 
-const MAX_TIME_SECONDS = 20;
+const MAX_TIME_SECONDS = 30;
 const MAX_POINTS = 1000;
 
 /**
@@ -20,13 +20,13 @@ export function calculateTimeBasedPoints(answerTimeMs: number, questionStartTime
   // Calculate elapsed time in seconds with millisecond precision
   const timeElapsedSeconds = (answerTimeMs - questionStartTimeMs) / 1000;
   
-  // If answered after 20 seconds, no points
+  // If answered after 30 seconds, no points
   if (timeElapsedSeconds >= MAX_TIME_SECONDS) {
     return 0;
   }
   
-  // Linear interpolation: 1000 points at 0s, 0 points at 20s
-  // Formula: points = 1000 * (1 - timeElapsed / 20)
+  // Linear interpolation: 1000 points at 0s, 0 points at 30s
+  // Formula: points = 1000 * (1 - timeElapsed / 30)
   // This gives different points for every centisecond difference
   const points = MAX_POINTS * (1 - timeElapsedSeconds / MAX_TIME_SECONDS);
   

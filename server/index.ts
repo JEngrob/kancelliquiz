@@ -19,6 +19,8 @@ import {
   checkGameEnd,
   getWinners,
 } from './gameLogic';
+
+const MAX_TIME_SECONDS = 30;
 import { Room, Question } from './types';
 import {
   sanitizePlayerName,
@@ -269,6 +271,7 @@ io.on('connection', (socket) => {
             correctIndex: room.gameState.currentQuestion.correctIndex,
             round: room.gameState.currentRound,
             totalRounds: room.gameState.totalRounds,
+            questionStartTime: room.gameState.questionStartTime,
           });
         }
 
@@ -415,6 +418,7 @@ io.on('connection', (socket) => {
           options: firstQuestion.options,
           round: room.gameState.currentRound,
           totalRounds: room.gameState.totalRounds,
+          questionStartTime: room.gameState.questionStartTime,
         });
         
         // Also send to host with correct index for display
@@ -424,6 +428,7 @@ io.on('connection', (socket) => {
           correctIndex: firstQuestion.correctIndex,
           round: room.gameState.currentRound,
           totalRounds: room.gameState.totalRounds,
+          questionStartTime: room.gameState.questionStartTime,
         });
     } else {
       io.to(roomId).emit('game:started', {
@@ -489,6 +494,7 @@ io.on('connection', (socket) => {
       options: sanitizedQuestion.options,
       round: room.gameState.currentRound,
       totalRounds: room.gameState.totalRounds,
+      questionStartTime: room.gameState.questionStartTime,
     });
   });
 
@@ -516,6 +522,15 @@ io.on('connection', (socket) => {
 
     if (room.gameState.state !== 'playing') return;
     if (!room.gameState.currentQuestion) return;
+
+    // Validate that answer is submitted within time limit
+    if (room.gameState.questionStartTime) {
+      const timeElapsedSeconds = (Date.now() - room.gameState.questionStartTime) / 1000;
+      if (timeElapsedSeconds > MAX_TIME_SECONDS) {
+        socket.emit('error', { message: 'Tiden er udløbet. Svar kan ikke længere indsendes.' });
+        return;
+      }
+    }
 
     room.gameState.answers.set(socket.id, answerIndex);
     room.gameState.answerTimestamps.set(socket.id, Date.now()); // Gem tidsstempel med millisekund præcision
@@ -658,6 +673,7 @@ io.on('connection', (socket) => {
           options: nextQuestion.options,
           round: room.gameState.currentRound,
           totalRounds: room.gameState.totalRounds,
+          questionStartTime: room.gameState.questionStartTime,
         });
         
         // Also send to host with correct index for display
@@ -667,6 +683,7 @@ io.on('connection', (socket) => {
           correctIndex: nextQuestion.correctIndex,
           round: room.gameState.currentRound,
           totalRounds: room.gameState.totalRounds,
+          questionStartTime: room.gameState.questionStartTime,
         });
         return;
       }

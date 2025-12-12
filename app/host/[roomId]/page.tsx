@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { useParams } from 'next/navigation';
 import PlayerList from '@/components/PlayerList';
@@ -69,7 +69,8 @@ export default function HostPage() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [timerActive, setTimerActive] = useState(false);
   const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
-  const [previousScores, setPreviousScores] = useState<Map<string, number>>(new Map());
+  const previousScoresRef = useRef<Map<string, number>>(new Map());
+  const playersRef = useRef<Player[]>([]);
 
   const currentDate = new Date().toLocaleDateString('da-DK', {
     day: '2-digit',
@@ -100,6 +101,7 @@ export default function HostPage() {
 
     const handlePlayerList = (data: { players: Player[] }) => {
       setPlayers(data.players);
+      playersRef.current = data.players;
     };
 
     const handleGameStarted = (data: { round: number; totalRounds: number }) => {
@@ -129,6 +131,7 @@ export default function HostPage() {
       setAnswerResults(data.answerResults);
       setCorrectAnswer(data.correctAnswer);
       setPlayers(data.players);
+      playersRef.current = data.players;
       setTimerActive(false);
       setTimeRemaining(null);
       if (data.gameEnded) {
@@ -174,10 +177,10 @@ export default function HostPage() {
         
         // Save previous scores before round starts
         const scoresMap = new Map<string, number>();
-        players.forEach(player => {
+        playersRef.current.forEach(player => {
           scoresMap.set(player.id, player.score);
         });
-        setPreviousScores(scoresMap);
+        previousScoresRef.current = scoresMap;
         
         // Start timer if questionStartTime is provided
         if (data.questionStartTime) {
@@ -201,10 +204,10 @@ export default function HostPage() {
         
         // Save previous scores before round starts
         const scoresMap = new Map<string, number>();
-        players.forEach(player => {
+        playersRef.current.forEach(player => {
           scoresMap.set(player.id, player.score);
         });
-        setPreviousScores(scoresMap);
+        previousScoresRef.current = scoresMap;
       }
     };
 
@@ -221,10 +224,10 @@ export default function HostPage() {
       
       // Save previous scores before round starts
       const scoresMap = new Map<string, number>();
-      players.forEach(player => {
+      playersRef.current.forEach(player => {
         scoresMap.set(player.id, player.score);
       });
-      setPreviousScores(scoresMap);
+      previousScoresRef.current = scoresMap;
       
       // Start timer if questionStartTime is provided
       if (data.questionStartTime) {
@@ -246,6 +249,7 @@ export default function HostPage() {
     const handleGameReset = (data: { players: Player[] }) => {
       setGameState('lobby');
       setPlayers(data.players);
+      playersRef.current = data.players;
       setCurrentRound(0);
       setAnswerResults([]);
       setWinners([]);
@@ -259,7 +263,7 @@ export default function HostPage() {
       setTimerActive(false);
       setTimeRemaining(null);
       setQuestionStartTime(null);
-      setPreviousScores(new Map());
+      previousScoresRef.current = new Map();
     };
 
     const handleError = (data: { message: string }) => {
@@ -361,7 +365,7 @@ export default function HostPage() {
       socket.off('player:rejoin-success', handleRejoinSuccess);
       socket.off('player:rejoin-error', handleRejoinError);
     };
-  }, [socket, isConnected, roomId, selectedQuiz, players]);
+  }, [socket, isConnected, roomId, selectedQuiz]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -689,7 +693,6 @@ export default function HostPage() {
                 )}
 
                 <div className="panel-kommunal-inset p-2 mb-2">
-                  <p className="text-xs text-ink-light mb-1">Spørgsmål:</p>
                   <p className="text-ink-black font-bold text-sm">{questionText}</p>
                 </div>
 
@@ -790,8 +793,8 @@ export default function HostPage() {
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {[...answerResults].sort((a, b) => {
                     // Calculate points for current round
-                    const aPreviousScore = previousScores.get(a.playerId) || 0;
-                    const bPreviousScore = previousScores.get(b.playerId) || 0;
+                    const aPreviousScore = previousScoresRef.current.get(a.playerId) || 0;
+                    const bPreviousScore = previousScoresRef.current.get(b.playerId) || 0;
                     const aRoundPoints = a.score - aPreviousScore;
                     const bRoundPoints = b.score - bPreviousScore;
                     // Sort by round points (descending), then by total score if equal
@@ -799,35 +802,48 @@ export default function HostPage() {
                       return bRoundPoints - aRoundPoints;
                     }
                     return b.score - a.score;
-                  }).map((result) => (
-                    <div
-                      key={result.playerId}
-                      className={`flex justify-between items-center p-2 border-2 text-xs ${
-                        result.isCorrect
-                          ? 'bg-godkendt/10 border-godkendt'
-                          : 'bg-stempel-roed/10 border-stempel-roed'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className={`w-2 h-2 flex-shrink-0 ${
-                          result.isCorrect ? 'bg-godkendt' : 'bg-stempel-roed'
-                        }`}></span>
-                        <span className="font-bold text-ink-black truncate">{result.playerName}</span>
+                  }).map((result) => {
+                    const previousScore = previousScoresRef.current.get(result.playerId) || 0;
+                    const roundPoints = result.score - previousScore;
+                    
+                    return (
+                      <div
+                        key={result.playerId}
+                        className={`flex justify-between items-center p-2 border-2 text-xs ${
+                          result.isCorrect
+                            ? 'bg-godkendt/10 border-godkendt'
+                            : 'bg-stempel-roed/10 border-stempel-roed'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className={`w-2 h-2 flex-shrink-0 ${
+                            result.isCorrect ? 'bg-godkendt' : 'bg-stempel-roed'
+                          }`}></span>
+                          <span className="font-bold text-ink-black truncate">{result.playerName}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {result.answerText !== undefined ? (
+                            <span className="text-ink-faded hidden sm:inline">{result.answerText}</span>
+                          ) : (
+                            <span className="text-ink-light italic hidden sm:inline">Intet svar</span>
+                          )}
+                          <span className={`font-bold ${
+                            result.isCorrect ? 'text-godkendt' : 'text-stempel-roed'
+                          }`}>
+                            {result.isCorrect ? '✓' : '✗'}
+                          </span>
+                          <div className="flex flex-col items-end ml-2">
+                            <span className="font-bold text-brun-moerk">
+                              {roundPoints > 0 ? `+${roundPoints.toFixed(1)}` : '0.0'}
+                            </span>
+                            <span className="text-[10px] text-ink-faded">
+                              Total: {result.score.toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {result.answerText !== undefined ? (
-                          <span className="text-ink-faded hidden sm:inline">{result.answerText}</span>
-                        ) : (
-                          <span className="text-ink-light italic hidden sm:inline">Intet svar</span>
-                        )}
-                        <span className={`font-bold ${
-                          result.isCorrect ? 'text-godkendt' : 'text-stempel-roed'
-                        }`}>
-                          {result.isCorrect ? '✓' : '✗'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

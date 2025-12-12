@@ -124,7 +124,7 @@ body {
   color: var(--ink-black);
   font-family: 'IBM Plex Mono', monospace;
   font-weight: 600;
-  padding: 8px 16px;
+  padding: 10px 20px;
   cursor: pointer;
   box-shadow: 
     2px 2px 0 var(--brun-moerk),
@@ -134,7 +134,7 @@ body {
 
 @media (min-width: 768px) {
   .btn-kommunal {
-    padding: 12px 24px;
+    padding: 14px 28px;
   }
 }
 
@@ -368,8 +368,8 @@ input:focus, textarea:focus, button:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  height: 32px;
+  min-width: 56px;
+  height: 36px;
   background: var(--paper-aged);
   border: 2px solid var(--brun-moerk);
   font-weight: bold;

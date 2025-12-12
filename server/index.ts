@@ -578,6 +578,16 @@ io.on('connection', (socket) => {
     // Check if game should end
     const gameEnded = checkGameEnd(room.gameState);
     const winners = gameEnded ? getWinners(room.gameState) : [];
+    
+    // Get top 3 players for winner screen (if game ended)
+    let topPlayers: Array<{ name: string; score: number }> = [];
+    if (gameEnded) {
+      const allPlayers = Array.from(room.gameState.players.values())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map(p => ({ name: p.name, score: p.score }));
+      topPlayers = allPlayers;
+    }
 
     // Prepare answer results
     const answerResults = Array.from(room.gameState.players.entries()).map(([playerId, player]) => {
@@ -601,7 +611,7 @@ io.on('connection', (socket) => {
       incorrect: incorrect.map(id => room.gameState.players.get(id)?.name).filter(Boolean),
       answerResults,
       gameEnded,
-      winners: winners.map(w => ({ name: w.name, score: w.score })),
+      winners: topPlayers.length > 0 ? topPlayers : winners.map(w => ({ name: w.name, score: w.score })),
       players: Array.from(room.gameState.players.values()),
     });
 
